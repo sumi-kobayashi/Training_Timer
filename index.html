@@ -169,7 +169,7 @@ const saveLogs=()=>LS.set('rt-logs',logs);
 const saveBody=()=>LS.set('rt-body',bodyMetrics);
 const saveMeals=()=>LS.set('rt-meals',meals);
 const saveSets=()=>LS.set('rt-settings',settings);
-const todayStr=()=>new Date().toISOString().slice(0,10);
+const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const nowTime=()=>new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
 const $=id=>document.getElementById(id);
 
