@@ -173,18 +173,56 @@ const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.get
 const nowTime=()=>new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
 const $=id=>document.getElementById(id);
 
-// ── Audio ──
+// ── Audio (loud, survives app switch) ──
 let _ac=null;
 function ac(){if(!_ac||_ac.state==='closed')_ac=new(window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume();return _ac}
-function tone(f,d,v=.3,t='square'){try{const c=ac(),o=c.createOscillator(),g=c.createGain();o.frequency.value=f;o.type=t;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d/1000);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+d/1000+.05)}catch{}}
+// Resume audio on app switch back
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&_ac&&_ac.state==='suspended')_ac.resume()});
+// Also resume on touch after returning
+document.addEventListener('touchstart',()=>{if(_ac&&_ac.state==='suspended')_ac.resume()},{passive:true});
+
+function tone(f,d,v=.8,t='square'){
+  try{
+    const c=ac();
+    // Compressor to boost loudness
+    const comp=c.createDynamicsCompressor();
+    comp.threshold.setValueAtTime(-10,c.currentTime);
+    comp.knee.setValueAtTime(0,c.currentTime);
+    comp.ratio.setValueAtTime(20,c.currentTime);
+    comp.connect(c.destination);
+    // Main oscillator
+    const o=c.createOscillator(),g=c.createGain();
+    o.frequency.value=f;o.type=t;
+    g.gain.setValueAtTime(v,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d/1000);
+    o.connect(g).connect(comp);o.start();o.stop(c.currentTime+d/1000+.05);
+    // Harmonic layer for extra cut-through
+    const o2=c.createOscillator(),g2=c.createGain();
+    o2.frequency.value=f*2;o2.type='sine';
+    g2.gain.setValueAtTime(v*.4,c.currentTime);
+    g2.gain.exponentialRampToValueAtTime(.001,c.currentTime+d/1000);
+    o2.connect(g2).connect(comp);o2.start();o2.stop(c.currentTime+d/1000+.05);
+  }catch{}
+}
 const SFX={
-  repTick(){tone(1000,50,.2,'sine')},repDone(){tone(1320,70,.3,'sine')},
-  setStart(){tone(523,90,.3,'sine');setTimeout(()=>tone(659,90,.3,'sine'),100);setTimeout(()=>tone(784,130,.35,'sine'),200)},
-  restStart(){tone(880,110,.35,'square');setTimeout(()=>tone(660,140,.3,'square'),150)},
-  restEnd(){tone(880,70,.35,'square');setTimeout(()=>tone(880,70,.35,'square'),140);setTimeout(()=>tone(1100,150,.4,'square'),280)},
-  countdown(){tone(880,60,.25,'sine')},
-  warn10(){tone(600,200,.3,'sine');setTimeout(()=>tone(800,200,.3,'sine'),220)},
+  repTick(){tone(1000,60,.5,'sine')},repDone(){tone(1320,80,.7,'sine')},
+  setStart(){tone(523,100,.6,'sine');setTimeout(()=>tone(659,100,.6,'sine'),100);setTimeout(()=>tone(784,140,.7,'sine'),200)},
+  restStart(){tone(880,120,.8,'square');setTimeout(()=>tone(660,150,.7,'square'),150)},
+  restEnd(){tone(880,80,.8,'square');setTimeout(()=>tone(880,80,.8,'square'),140);setTimeout(()=>tone(1100,160,.9,'square'),280)},
+  countdown(){tone(880,70,.6,'sine')},
+  warn10(){tone(600,220,.7,'sine');setTimeout(()=>tone(800,220,.7,'sine'),220)},
 };
+
+// ── Wake Lock (prevent auto-lock) ──
+let wakeLock=null;
+async function requestWakeLock(){
+  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen')}}catch{}
+}
+async function releaseWakeLock(){
+  try{if(wakeLock){await wakeLock.release();wakeLock=null}}catch{}
+}
+// Re-acquire wake lock when returning to app (iOS releases it on switch)
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode!=='idle')requestWakeLock()});
 
 // ── Modal ──
 function closeModal(){$('modal-bg').classList.remove('on')}
@@ -326,7 +364,7 @@ function updateMainBtn(){
 function stop(){if(iv){clearInterval(iv);iv=null}}
 
 function startRep(){
-  stop();const rt=getRepTime();
+  stop();requestWakeLock();const rt=getRepTime();
   mode='rep';tRef=rt;tLeft=rt;lastSec=-1;lastCd=-1;
   if(settings.snd)SFX.setStart();
   updateMainBtn();updateRing();
@@ -358,7 +396,7 @@ function startRest(){
 }
 
 $('t-main').onclick=()=>{try{ac()}catch{}if(mode==='idle'){rRef=0;repCount=0;startRep()}else if(mode==='rep')startRest();else{stop();startRep()}};
-$('t-reset').onclick=()=>{stop();mode='idle';tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
+$('t-reset').onclick=()=>{stop();releaseWakeLock();mode='idle';tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
 updateRing();
 
 // ══════════════════════════════
