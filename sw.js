@@ -1,4 +1,4 @@
-const CACHE_NAME = ‘rep-timer-v6’;
+const CACHE_NAME = ‘rep-timer-v7’;
 const ASSETS = [
 ‘./’,
 ‘./index.html’,
