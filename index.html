@@ -586,8 +586,17 @@ $(‘body-list’).innerHTML=h;
 
 window.deleteBody=idx=>{bodyMetrics.splice(idx,1);saveBody();renderBody()};
 
-// ── Service Worker ──
-if(‘serviceWorker’ in navigator){navigator.serviceWorker.register(‘sw.js’).catch(()=>{})}
+// ── Clean up old service workers ──
+if(‘serviceWorker’ in navigator){
+navigator.serviceWorker.getRegistrations().then(function(regs){
+regs.forEach(function(r){r.unregister()});
+});
+if(‘caches’ in window){
+caches.keys().then(function(keys){
+keys.forEach(function(k){caches.delete(k)});
+});
+}
+}
 </script>
 
 </body>
