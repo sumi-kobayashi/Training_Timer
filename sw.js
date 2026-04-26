@@ -1,26 +1,23 @@
-const CACHE_NAME = ‘rep-timer-v7’;
-const ASSETS = [
-‘./’,
-‘./index.html’,
-‘https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js’
-];
-
-self.addEventListener(‘install’, e => {
-e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+// Self-destruct: clear all caches and unregister
+self.addEventListener(‘install’, function(e) {
 self.skipWaiting();
 });
 
-self.addEventListener(‘activate’, e => {
-e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
-self.clients.claim();
+self.addEventListener(‘activate’, function(e) {
+e.waitUntil(
+caches.keys().then(function(keys) {
+return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+}).then(function() {
+return self.registration.unregister();
+}).then(function() {
+return self.clients.matchAll();
+}).then(function(clients) {
+clients.forEach(function(c) { c.navigate(c.url); });
+})
+);
 });
 
-self.addEventListener(‘fetch’, e => {
-e.respondWith(
-fetch(e.request).then(r => {
-const rc = r.clone();
-caches.open(CACHE_NAME).then(c => c.put(e.request, rc));
-return r;
-}).catch(() => caches.match(e.request))
-);
+// Don’t cache anything - pass through to network
+self.addEventListener(‘fetch’, function(e) {
+e.respondWith(fetch(e.request));
 });
