@@ -179,88 +179,76 @@ const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.get
 const nowTime=()=>new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
 const $=id=>document.getElementById(id);
 
-// ── Audio (WAV-based, uses MEDIA volume on iOS) ──
-// Generate WAV data URI from PCM samples - plays through same channel as music
-function genWav(freqs, durMs, vol=1.0) {
-  const sr=44100, len=Math.floor(sr*durMs/1000), ch=1;
-  const buf=new ArrayBuffer(44+len*2), v=new DataView(buf);
-  // WAV header
-  const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
-  w(0,'RIFF');v.setUint32(4,36+len*2,true);w(8,'WAVE');w(12,'fmt ');
-  v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,ch,true);
-  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);
-  v.setUint16(34,16,true);w(36,'data');v.setUint32(40,len*2,true);
-  // Generate samples (sum of frequencies with harmonics)
-  for(let i=0;i<len;i++){
-    const t=i/sr;
-    const env=Math.min(1, (len-i)/(sr*0.02)); // fade out last 20ms
-    let s=0;
-    for(const f of freqs){
-      s+=Math.sin(2*Math.PI*f*t);         // fundamental
-      s+=0.5*Math.sin(2*Math.PI*f*2*t);   // 2nd harmonic
-      s+=0.25*Math.sin(2*Math.PI*f*3*t);  // 3rd harmonic
-    }
-    s=s/freqs.length*vol*env;
-    s=Math.max(-1,Math.min(1,s*1.5));     // soft clip for loudness
-    v.setInt16(44+i*2,s*32760,true);
-  }
-  const blob=new Blob([buf],{type:'audio/wav'});
-  return URL.createObjectURL(blob);
+// ── Audio ──
+// Trick: play silent <audio> to switch iOS audio session to "media" mode
+// This makes Web Audio API use the media volume (same as music)
+const SILENT_MP3='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRwMHAAAAAAD/+1DEAAAH+ANoUAAABNQKaswxAABMSS/JJEgGBg+D5QMYP/BwfB8HwfB8HwfKBjB////5cHwfB8HygY//BjB8HwfB8oGMH//lwfB8HwfKBjB///+XB8HwfB8oGMH///5cHwfB8HwfKBjAABgIAMGMHwfB8HwfKBjB///+XB8HwfB8oGMH///5cHwfB8HygYwf/+XB8HwfB8HygYwAAYCADBAGBIOSQ0NDf/7UsQeAAAAAaQAAAAAAAA0gAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+let silentEl=null;
+function initMediaAudio(){
+  if(silentEl)return;
+  silentEl=document.createElement('audio');
+  silentEl.src=SILENT_MP3;
+  silentEl.loop=true;
+  silentEl.volume=0.01;
+  silentEl.play().catch(()=>{});
 }
 
-// Pre-generate all sounds
-const WAVS={
-  repTick:    genWav([1000], 70, 0.8),
-  repDone:    genWav([1320], 90, 1.0),
-  setStart1:  genWav([523], 110, 0.9),
-  setStart2:  genWav([659], 110, 0.9),
-  setStart3:  genWav([784], 150, 1.0),
-  restStart1: genWav([880], 130, 1.0),
-  restStart2: genWav([660], 160, 0.9),
-  restEnd1:   genWav([880], 90, 1.0),
-  restEnd2:   genWav([880], 90, 1.0),
-  restEnd3:   genWav([1100], 170, 1.0),
-  countdown:  genWav([880], 80, 0.9),
-  warn10:     genWav([600,800], 250, 0.9),
-};
-
-// Audio pool to allow overlapping playback
-function playWav(key){
-  try{
-    const a=new Audio(WAVS[key]);
-    a.volume=1.0;
-    a.play().catch(()=>{});
-  }catch{}
+let _ac=null;
+function ac(){
+  if(!_ac||_ac.state==='closed')_ac=new(window.AudioContext||window.webkitAudioContext)();
+  if(_ac.state==='suspended')_ac.resume();
+  return _ac;
 }
 
-// Keep audio session alive with silent audio (prevents iOS from killing audio)
-let silentAudio=null;
-function initSilentLoop(){
-  if(silentAudio)return;
-  silentAudio=new Audio(genWav([0],100,0));
-  silentAudio.loop=true;
-  silentAudio.volume=0.01;
-  silentAudio.play().catch(()=>{});
-}
-
-// Resume on app switch back
 document.addEventListener('visibilitychange',()=>{
   if(!document.hidden){
-    if(silentAudio)silentAudio.play().catch(()=>{});
+    if(_ac&&_ac.state==='suspended')_ac.resume();
+    if(silentEl&&silentEl.paused)silentEl.play().catch(()=>{});
   }
 });
 document.addEventListener('touchstart',()=>{
-  if(silentAudio&&silentAudio.paused)silentAudio.play().catch(()=>{});
+  if(_ac&&_ac.state==='suspended')_ac.resume();
+  if(silentEl&&silentEl.paused)silentEl.play().catch(()=>{});
 },{passive:true});
 
+function tone(f,d,v=1.0,t='square'){
+  try{
+    const c=ac();
+    const comp=c.createDynamicsCompressor();
+    comp.threshold.setValueAtTime(-6,c.currentTime);
+    comp.knee.setValueAtTime(0,c.currentTime);
+    comp.ratio.setValueAtTime(20,c.currentTime);
+    comp.attack.setValueAtTime(0,c.currentTime);
+    comp.release.setValueAtTime(0.05,c.currentTime);
+    comp.connect(c.destination);
+    // Main tone
+    const o=c.createOscillator(),g=c.createGain();
+    o.frequency.value=f;o.type=t;
+    g.gain.setValueAtTime(v,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d/1000);
+    o.connect(g).connect(comp);o.start();o.stop(c.currentTime+d/1000+.05);
+    // Harmonic for punch
+    const o2=c.createOscillator(),g2=c.createGain();
+    o2.frequency.value=f*2;o2.type='sine';
+    g2.gain.setValueAtTime(v*0.5,c.currentTime);
+    g2.gain.exponentialRampToValueAtTime(.001,c.currentTime+d/1000);
+    o2.connect(g2).connect(comp);o2.start();o2.stop(c.currentTime+d/1000+.05);
+    // Sub harmonic for body
+    const o3=c.createOscillator(),g3=c.createGain();
+    o3.frequency.value=f*0.5;o3.type='square';
+    g3.gain.setValueAtTime(v*0.3,c.currentTime);
+    g3.gain.exponentialRampToValueAtTime(.001,c.currentTime+d/1000);
+    o3.connect(g3).connect(comp);o3.start();o3.stop(c.currentTime+d/1000+.05);
+  }catch{}
+}
 const SFX={
-  repTick(){playWav('repTick')},
-  repDone(){playWav('repDone')},
-  setStart(){playWav('setStart1');setTimeout(()=>playWav('setStart2'),110);setTimeout(()=>playWav('setStart3'),220)},
-  restStart(){playWav('restStart1');setTimeout(()=>playWav('restStart2'),150)},
-  restEnd(){playWav('restEnd1');setTimeout(()=>playWav('restEnd2'),150);setTimeout(()=>playWav('restEnd3'),300)},
-  countdown(){playWav('countdown')},
-  warn10(){playWav('warn10')},
+  repTick(){tone(1000,70,0.7,'sine')},
+  repDone(){tone(1320,90,1.0,'sine')},
+  setStart(){tone(523,110,0.8,'sine');setTimeout(()=>tone(659,110,0.8,'sine'),110);setTimeout(()=>tone(784,150,1.0,'sine'),220)},
+  restStart(){tone(880,130,1.0,'square');setTimeout(()=>tone(660,160,0.9,'square'),160)},
+  restEnd(){tone(880,90,1.0,'square');setTimeout(()=>tone(880,90,1.0,'square'),150);setTimeout(()=>tone(1100,180,1.0,'square'),300)},
+  countdown(){tone(880,80,0.8,'sine')},
+  warn10(){tone(600,230,0.9,'sine');setTimeout(()=>tone(800,230,0.9,'sine'),240)},
 };
 
 // ── Wake Lock (prevent auto-lock) ──
@@ -449,7 +437,7 @@ tLeft=Math.max(0,tRef);updateRing();
 },100);
 }
 
-$(‘t-main’).onclick=()=>{initSilentLoop();if(mode===‘idle’){rRef=0;repCount=0;startRep()}else if(mode===‘rep’)startRest();else{stop();startRep()}};
+$(‘t-main’).onclick=()=>{initMediaAudio();try{ac()}catch{};if(mode===‘idle’){rRef=0;repCount=0;startRep()}else if(mode===‘rep’)startRest();else{stop();startRep()}};
 $(‘t-reset’).onclick=()=>{stop();releaseWakeLock();mode=‘idle’;tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
 updateRing();
 
