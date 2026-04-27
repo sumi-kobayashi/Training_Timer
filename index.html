@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -82,7 +81,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- TIMER -->
-
 <div class="view on" id="v-timer" style="display:flex;flex-direction:column;align-items:center;gap:16px">
   <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px">
     <div>
@@ -120,7 +118,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- LOG -->
-
 <div class="view" id="v-log">
   <pre id="log-report" style="background:#0c0c0c;border:1px solid var(--c2);border-radius:10px;padding:12px;font-size:11px;color:#999;white-space:pre-wrap;line-height:1.6;margin-bottom:8px;overflow-x:auto" class="mono"></pre>
   <button id="log-copy" class="copy-btn" style="background:#0d0d1a;color:var(--blu);border-color:#6B8AFF33">📝 今日のレポートをコピー</button>
@@ -130,7 +127,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- MEAL -->
-
 <div class="view" id="v-meal">
   <div class="meal-types" id="meal-types"></div>
   <textarea id="m-content" class="inp" rows="2" placeholder="食事内容を入力..." style="font-size:13px;margin-bottom:8px"></textarea>
@@ -143,7 +139,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- BODY -->
-
 <div class="view" id="v-body">
   <div style="display:flex;gap:8px;margin-bottom:10px">
     <div style="flex:1"><label class="lbl">Weight (kg)</label><input id="b-wt" type="number" step="0.1" class="inp mono" placeholder="75.0"></div>
@@ -157,7 +152,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- EDIT MODAL -->
-
 <div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
   <div class="modal" id="modal"></div>
 </div>
@@ -297,186 +291,195 @@ function openEditMeal(idx){
   $('modal').innerHTML=`<h3>食事編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3>
     <div class="row"><div><label class="lbl">Type</label><select id="ed-mtype" class="inp inp-l" style="font-size:13px">${mtOpts}</select></div></div>
     <div class="row"><div><label class="lbl">Content</label><textarea id="ed-mcont" class="inp" rows="2" style="font-size:13px;text-align:left">${m.content}</textarea></div></div>
-
-```
-<div class="row">
-  <div><label class="lbl">kcal</label><input id="ed-mcal" type="number" class="inp mono" value="${m.calories||''}" placeholder="任意"></div>
-  <div><label class="lbl">Time</label><input id="ed-mtime" type="time" class="inp mono" value="${m.time||''}" style="font-size:13px"></div>
-</div>
-<div class="row"><div><label class="lbl">Date</label><input id="ed-mdate" type="date" class="inp mono" value="${m.date}" style="font-size:13px"></div><div></div></div>
-<div class="actions">
-  <button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>
-  <button style="background:var(--red);color:#fff" onclick="saveEditMeal(${idx})">Save</button>
-</div>`;
-```
-
-$(‘modal-bg’).classList.add(‘on’);
+    <div class="row">
+      <div><label class="lbl">kcal</label><input id="ed-mcal" type="number" class="inp mono" value="${m.calories||''}" placeholder="任意"></div>
+      <div><label class="lbl">Time</label><input id="ed-mtime" type="time" class="inp mono" value="${m.time||''}" style="font-size:13px"></div>
+    </div>
+    <div class="row"><div><label class="lbl">Date</label><input id="ed-mdate" type="date" class="inp mono" value="${m.date}" style="font-size:13px"></div><div></div></div>
+    <div class="actions">
+      <button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>
+      <button style="background:var(--red);color:#fff" onclick="saveEditMeal(${idx})">Save</button>
+    </div>`;
+  $('modal-bg').classList.add('on');
 }
 
 window.saveEditMeal=idx=>{
-meals[idx].type=$(‘ed-mtype’).value;
-meals[idx].content=$(‘ed-mcont’).value.trim()||meals[idx].content;
-meals[idx].calories=$(‘ed-mcal’).value?parseInt($(‘ed-mcal’).value):null;
-meals[idx].time=$(‘ed-mtime’).value||meals[idx].time;
-meals[idx].date=$(‘ed-mdate’).value||meals[idx].date;
-saveMeals(); closeModal(); renderMeals();
+  meals[idx].type=$('ed-mtype').value;
+  meals[idx].content=$('ed-mcont').value.trim()||meals[idx].content;
+  meals[idx].calories=$('ed-mcal').value?parseInt($('ed-mcal').value):null;
+  meals[idx].time=$('ed-mtime').value||meals[idx].time;
+  meals[idx].date=$('ed-mdate').value||meals[idx].date;
+  saveMeals(); closeModal(); renderMeals();
 };
 
 // ── Tabs ──
-const views=[‘timer’,‘log’,‘meal’,‘body’];
-document.querySelectorAll(’#tabs button’).forEach(b=>{
-b.onclick=()=>{
-document.querySelectorAll(’#tabs button’).forEach(x=>x.classList.remove(‘on’));
-b.classList.add(‘on’);
-views.forEach(v=>{const el=$(‘v-’+v);el.classList.toggle(‘on’,v===b.dataset.v);el.style.display=v===b.dataset.v?(v===‘timer’?‘flex’:‘block’):‘none’});
-if(b.dataset.v===‘log’)renderLog();if(b.dataset.v===‘meal’)renderMeals();if(b.dataset.v===‘body’)renderBody();
-};
+const views=['timer','log','meal','body'];
+document.querySelectorAll('#tabs button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    views.forEach(v=>{const el=$('v-'+v);el.classList.toggle('on',v===b.dataset.v);el.style.display=v===b.dataset.v?(v==='timer'?'flex':'block'):'none'});
+    if(b.dataset.v==='log')renderLog();if(b.dataset.v==='meal')renderMeals();if(b.dataset.v==='body')renderBody();
+  };
 });
 
 const MEAL_TYPES=[
-{id:‘breakfast’,label:‘朝食’,icon:‘🍳’},{id:‘lunch’,label:‘昼食’,icon:‘🍛’},
-{id:‘dinner’,label:‘夕食’,icon:‘🍖’},{id:‘snack’,label:‘間食’,icon:‘🍪’},
-{id:‘supplement’,label:‘サプリ’,icon:‘💊’},
+  {id:'breakfast',label:'朝食',icon:'🍳'},{id:'lunch',label:'昼食',icon:'🍛'},
+  {id:'dinner',label:'夕食',icon:'🍖'},{id:'snack',label:'間食',icon:'🍪'},
+  {id:'supplement',label:'サプリ',icon:'💊'},
 ];
 
 // ══════════════════════════════
 //  TIMER
 // ══════════════════════════════
 const CIRC=2*Math.PI*118;
-let mode=‘idle’,tLeft=0,repCount=0,setCount=0,totalReps=0;
+let mode='idle',tLeft=0,repCount=0,setCount=0,totalReps=0;
 let iv=null,tRef=0,rRef=0,lastCd=-1,lastSec=-1,warned10=false;
 
-$(‘t-rep’).value=settings.repTime;
-$(‘t-rest’).value=settings.restTime;
+$('t-rep').value=settings.repTime;
+$('t-rest').value=settings.restTime;
 
-function updateSndBtn(){const b=$(‘t-snd’);b.textContent=settings.snd?‘🔊 ON’:‘🔇 OFF’;b.style.background=settings.snd?’#0d1a0d’:’#1a0d0d’;b.style.color=settings.snd?‘var(–grn)’:‘var(–red)’;b.style.borderColor=settings.snd?’#34C75933’:’#FF3B3033’}
+function updateSndBtn(){const b=$('t-snd');b.textContent=settings.snd?'🔊 ON':'🔇 OFF';b.style.background=settings.snd?'#0d1a0d':'#1a0d0d';b.style.color=settings.snd?'var(--grn)':'var(--red)';b.style.borderColor=settings.snd?'#34C75933':'#FF3B3033'}
 updateSndBtn();
-$(‘t-snd’).onclick=()=>{settings.snd=!settings.snd;saveSets();updateSndBtn()};
+$('t-snd').onclick=()=>{settings.snd=!settings.snd;saveSets();updateSndBtn()};
 
-function getRepTime(){return parseFloat($(‘t-rep’).value)||4}
-function getRestTime(){return parseInt($(‘t-rest’).value)||60}
-$(‘t-rep’).oninput=()=>{settings.repTime=getRepTime();saveSets()};
-$(‘t-rest’).oninput=()=>{settings.restTime=getRestTime();saveSets()};
+function getRepTime(){return parseFloat($('t-rep').value)||4}
+function getRestTime(){return parseInt($('t-rest').value)||60}
+$('t-rep').oninput=()=>{settings.repTime=getRepTime();saveSets()};
+$('t-rest').oninput=()=>{settings.restTime=getRestTime();saveSets()};
 
 function renderExSelect(){
-const s=$(‘t-ex’),cur=s.value;
-s.innerHTML=exercises.length===0?’<option value="">No exercises</option>’:exercises.map(e=>`<option value="${e}">${e}</option>`).join(’’);
-if(exercises.includes(cur))s.value=cur;
-$(‘t-delex’).style.display=exercises.length>0?’’:‘none’;
-$(‘t-delex’).textContent=`Delete "${$('t-ex').value}"`;
-const lf=$(‘log-filter’),lfv=lf.value;
-lf.innerHTML=’<option value="all">All Exercises</option>’+exercises.map(e=>`<option value="${e}">${e}</option>`).join(’’);
-if(exercises.includes(lfv)||lfv===‘all’)lf.value=lfv;
+  const s=$('t-ex'),cur=s.value;
+  s.innerHTML=exercises.length===0?'<option value="">No exercises</option>':exercises.map(e=>`<option value="${e}">${e}</option>`).join('');
+  if(exercises.includes(cur))s.value=cur;
+  $('t-delex').style.display=exercises.length>0?'':'none';
+  $('t-delex').textContent=`Delete "${$('t-ex').value}"`;
+  const lf=$('log-filter'),lfv=lf.value;
+  lf.innerHTML='<option value="all">All Exercises</option>'+exercises.map(e=>`<option value="${e}">${e}</option>`).join('');
+  if(exercises.includes(lfv)||lfv==='all')lf.value=lfv;
 }
 renderExSelect();
-$(‘t-ex’).onchange=()=>{$(‘t-delex’).textContent=`Delete "${$('t-ex').value}"`};
-$(‘t-addex’).onclick=()=>{const v=$(‘t-newex’).value.trim();if(v&&!exercises.includes(v)){exercises.push(v);saveEx();renderExSelect();$(‘t-ex’).value=v;$(‘t-delex’).textContent=`Delete "${v}"`}$(‘t-newex’).value=’’};
-$(‘t-newex’).onkeydown=e=>{if(e.key===‘Enter’)$(‘t-addex’).click()};
-$(‘t-delex’).onclick=()=>{const v=$(‘t-ex’).value;exercises=exercises.filter(e=>e!==v);saveEx();renderExSelect()};
+$('t-ex').onchange=()=>{$('t-delex').textContent=`Delete "${$('t-ex').value}"`};
+$('t-addex').onclick=()=>{const v=$('t-newex').value.trim();if(v&&!exercises.includes(v)){exercises.push(v);saveEx();renderExSelect();$('t-ex').value=v;$('t-delex').textContent=`Delete "${v}"`}$('t-newex').value=''};
+$('t-newex').onkeydown=e=>{if(e.key==='Enter')$('t-addex').click()};
+$('t-delex').onclick=()=>{const v=$('t-ex').value;exercises=exercises.filter(e=>e!==v);saveEx();renderExSelect()};
 
 function updateRing(){
-const rt=getRepTime(),rest=getRestTime();
-let prog=0;
-if(mode===‘rep’)prog=(rt-tLeft)/rt;else if(mode===‘rest’)prog=(rest-tLeft)/rest;
-const col=mode===‘rep’?‘var(–red)’:mode===‘rest’?‘var(–grn)’:’#444’;
-$(‘ring-arc’).setAttribute(‘stroke’,col);$(‘ring-arc’).setAttribute(‘stroke-dashoffset’,CIRC*(1-prog));
-$(‘ring-label’).textContent=mode===‘idle’?‘Ready’:mode===‘rep’?‘Rep’:‘Rest’;
-$(‘ring-label’).style.color=col;
-if(mode===‘idle’)$(‘ring-time’).textContent=‘0.0’;
-else if(mode===‘rest’&&tLeft>9.95)$(‘ring-time’).textContent=Math.ceil(tLeft);
-else $(‘ring-time’).textContent=tLeft.toFixed(1);
-$(‘ring-rep’).textContent=mode===‘rep’?`Rep #${repCount}`:’’;
-$(‘st-sets’).textContent=setCount;$(‘st-reps’).textContent=repCount;$(‘st-total’).textContent=totalReps;
+  const rt=getRepTime(),rest=getRestTime();
+  let prog=0;
+  if(mode==='rep')prog=(rt-tLeft)/rt;else if(mode==='rest')prog=(rest-tLeft)/rest;
+  const col=mode==='rep'?'var(--red)':mode==='rest'?'var(--grn)':'#444';
+  $('ring-arc').setAttribute('stroke',col);$('ring-arc').setAttribute('stroke-dashoffset',CIRC*(1-prog));
+  $('ring-label').textContent=mode==='idle'?'Ready':mode==='rep'?'Rep':'Rest';
+  $('ring-label').style.color=col;
+  if(mode==='idle')$('ring-time').textContent='0.0';
+  else if(mode==='rest'&&tLeft>9.95)$('ring-time').textContent=Math.ceil(tLeft);
+  else $('ring-time').textContent=tLeft.toFixed(1);
+  $('ring-rep').textContent=mode==='rep'?`Rep #${repCount}`:'';
+  $('st-sets').textContent=setCount;$('st-reps').textContent=repCount;$('st-total').textContent=totalReps;
 }
 
 function updateMainBtn(){
-const b=$(‘t-main’);
-if(mode===‘idle’){b.textContent=‘▶ START’;b.style.background=‘var(–red)’}
-else if(mode===‘rep’){b.textContent=‘⏸ REST’;b.style.background=‘var(–grn)’}
-else{b.textContent=‘⏩ SKIP’;b.style.background=‘var(–org)’}
-$(‘t-reset’).style.display=mode===‘idle’?‘none’:’’;
+  const b=$('t-main');
+  if(mode==='idle'){b.textContent='▶ START';b.style.background='var(--red)'}
+  else if(mode==='rep'){b.textContent='⏸ REST';b.style.background='var(--grn)'}
+  else{b.textContent='⏩ SKIP';b.style.background='var(--org)'}
+  $('t-reset').style.display=mode==='idle'?'none':'';
 }
 
 function stop(){if(iv){clearInterval(iv);iv=null}}
 
 function startRep(){
-stop();requestWakeLock();const rt=getRepTime();
-mode=‘rep’;tRef=rt;tLeft=rt;lastSec=-1;lastCd=-1;
-if(settings.snd)SFX.setStart();
-updateMainBtn();updateRing();
-iv=setInterval(()=>{
-tRef-=0.1;
-const sec=Math.floor(tRef);
-if(sec!==lastSec&&sec>=0&&tRef>0.05){lastSec=sec;if(settings.snd)SFX.repTick()}
-if(tRef<=0){rRef++;repCount=rRef;totalReps++;if(settings.snd)SFX.repDone();tRef=rt;lastSec=-1}
-tLeft=Math.max(0,tRef);updateRing();
-},100);
+  stop();requestWakeLock();const rt=getRepTime();
+  mode='rep';tRef=rt;tLeft=rt;lastSec=-1;lastCd=-1;
+  if(settings.snd)SFX.setStart();
+  updateMainBtn();updateRing();
+  iv=setInterval(()=>{
+    tRef-=0.1;
+    const sec=Math.floor(tRef);
+    if(sec!==lastSec&&sec>=0&&tRef>0.05){lastSec=sec;if(settings.snd)SFX.repTick()}
+    if(tRef<=0){rRef++;repCount=rRef;totalReps++;if(settings.snd)SFX.repDone();tRef=rt;lastSec=-1}
+    tLeft=Math.max(0,tRef);updateRing();
+  },100);
 }
 
 function startRest(){
-stop();const reps=rRef,rt=getRepTime(),rest=getRestTime();
-mode=‘rest’;tRef=rest;tLeft=rest;lastCd=-1;warned10=false;
-setCount++;
-const ex=$(‘t-ex’).value;
-if(reps>0&&ex){logs.push({date:todayStr(),time:nowTime(),exercise:ex,reps,set:setCount,repTime:rt,restTime:rest});saveLogs()}
-rRef=0;repCount=0;
-if(settings.snd)SFX.restStart();
-updateMainBtn();updateRing();
-iv=setInterval(()=>{
-tRef-=0.1;const sec=Math.ceil(tRef);
-if(!warned10&&sec<=10&&sec>=1&&tRef>0){warned10=true;if(settings.snd)SFX.warn10()}
-if(sec<=5&&sec>=1&&sec!==lastCd&&tRef>0){lastCd=sec;if(settings.snd)SFX.countdown()}
-if(tRef<=0){stop();if(settings.snd)SFX.restEnd();startRep();return}
-tLeft=Math.max(0,tRef);updateRing();
-},100);
+  stop();const reps=rRef,rt=getRepTime(),rest=getRestTime();
+  mode='rest';tRef=rest;tLeft=rest;lastCd=-1;warned10=false;
+  setCount++;
+  const ex=$('t-ex').value;
+  if(reps>0&&ex){logs.push({date:todayStr(),time:nowTime(),exercise:ex,reps,set:setCount,repTime:rt,restTime:rest});saveLogs()}
+  rRef=0;repCount=0;
+  if(settings.snd)SFX.restStart();
+  updateMainBtn();updateRing();
+  iv=setInterval(()=>{
+    tRef-=0.1;const sec=Math.ceil(tRef);
+    if(!warned10&&sec<=10&&sec>=1&&tRef>0){warned10=true;if(settings.snd)SFX.warn10()}
+    if(sec<=5&&sec>=1&&sec!==lastCd&&tRef>0){lastCd=sec;if(settings.snd)SFX.countdown()}
+    if(tRef<=0){stop();if(settings.snd)SFX.restEnd();startRep();return}
+    tLeft=Math.max(0,tRef);updateRing();
+  },100);
 }
 
-$(‘t-main’).onclick=function(){try{initMediaAudio();ac()}catch(e){};if(mode===‘idle’){rRef=0;repCount=0;startRep()}else if(mode===‘rep’)startRest();else{stop();startRep()}};
-$(‘t-reset’).onclick=()=>{stop();releaseWakeLock();mode=‘idle’;tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
+$('t-main').onclick=function(){try{initMediaAudio();ac()}catch(e){};if(mode==='idle'){rRef=0;repCount=0;startRep()}else if(mode==='rep')startRest();else{stop();startRep()}};
+$('t-reset').onclick=()=>{stop();releaseWakeLock();mode='idle';tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
 updateRing();
 
 // ══════════════════════════════
 //  REPORT
 // ══════════════════════════════
 function genReport(d){
-const dl=logs.filter(l=>l.date===d),db=bodyMetrics.filter(m=>m.date===d),dm=meals.filter(m=>m.date===d);
-const L=[`📅 ${d}`,‘─’.repeat(28)];
-if(db.length){const b=db[db.length-1];L.push(’\n🏋️ 体組成’);if(b.weight)L.push(`  体重: ${b.weight} kg`);if(b.bodyFat)L.push(`  体脂肪率: ${b.bodyFat} %`)}
-if(dm.length){L.push(’\n🍽️ 食事’);dm.forEach(m=>{const mt=MEAL_TYPES.find(t=>t.id===m.type);let l=`  ${mt?mt.icon:'🍽'} ${mt?mt.label:m.type}`;if(m.time)l+=` (${m.time})`;l+=`: ${m.content}`;if(m.calories)l+=` [${m.calories}kcal]`;L.push(l)});const tc=dm.reduce((s,m)=>s+(m.calories||0),0);if(tc>0)L.push(`  合計: ${tc} kcal`)}
-if(dl.length){const byEx={};dl.forEach(l=>{if(!byEx[l.exercise])byEx[l.exercise]=[];byEx[l.exercise].push(l)});L.push(’\n💪 トレーニング’);Object.entries(byEx).forEach(([ex,sets])=>{const tr=sets.reduce((s,x)=>s+x.reps,0);L.push(`\n  ▸ ${ex}`);sets.forEach(s=>L.push(`    Set${s.set}: ${s.reps}reps (${s.repTime}s/rep, rest ${s.restTime}s)`));L.push(`    → ${sets.length}sets / ${tr}reps`)});const gt=dl.reduce((s,l)=>s+l.reps,0);L.push(’\n’+‘─’.repeat(28));L.push(`📊 ${Object.keys(byEx).length}種目 / ${dl.length}sets / ${gt}reps`)}
-if(!dl.length&&!db.length&&!dm.length)L.push(’\n記録なし’);
-return L.join(’\n’);
+  const dl=logs.filter(l=>l.date===d),db=bodyMetrics.filter(m=>m.date===d),dm=meals.filter(m=>m.date===d);
+  const L=[`📅 ${d}`,'─'.repeat(28)];
+  if(db.length){const b=db[db.length-1];L.push('\n🏋️ 体組成');if(b.weight)L.push(`  体重: ${b.weight} kg`);if(b.bodyFat)L.push(`  体脂肪率: ${b.bodyFat} %`)}
+  if(dm.length){L.push('\n🍽️ 食事');dm.forEach(m=>{const mt=MEAL_TYPES.find(t=>t.id===m.type);let l=`  ${mt?mt.icon:'🍽'} ${mt?mt.label:m.type}`;if(m.time)l+=` (${m.time})`;l+=`: ${m.content}`;if(m.calories)l+=` [${m.calories}kcal]`;L.push(l)});const tc=dm.reduce((s,m)=>s+(m.calories||0),0);if(tc>0)L.push(`  合計: ${tc} kcal`)}
+  if(dl.length){const byEx={};dl.forEach(l=>{if(!byEx[l.exercise])byEx[l.exercise]=[];byEx[l.exercise].push(l)});L.push('\n💪 トレーニング');Object.entries(byEx).forEach(([ex,sets])=>{const tr=sets.reduce((s,x)=>s+x.reps,0);L.push(`\n  ▸ ${ex}`);sets.forEach(s=>L.push(`    Set${s.set}: ${s.reps}reps (${s.repTime}s/rep, rest ${s.restTime}s)`));L.push(`    → ${sets.length}sets / ${tr}reps`)});const gt=dl.reduce((s,l)=>s+l.reps,0);L.push('\n'+'─'.repeat(28));L.push(`📊 ${Object.keys(byEx).length}種目 / ${dl.length}sets / ${gt}reps`)}
+  if(!dl.length&&!db.length&&!dm.length)L.push('\n記録なし');
+  return L.join('\n');
 }
 
 async function copyText(txt,btn){
-try{await navigator.clipboard.writeText(txt)}catch{const t=document.createElement(‘textarea’);t.value=txt;document.body.appendChild(t);t.select();document.execCommand(‘copy’);document.body.removeChild(t)}
-const orig=btn.textContent;btn.textContent=‘✓ コピーしました！’;btn.style.background=’#0d1a0d’;btn.style.color=‘var(–grn)’;btn.style.borderColor=’#34C75933’;
-setTimeout(()=>{btn.textContent=orig;btn.style.background=’#0d0d1a’;btn.style.color=‘var(–blu)’;btn.style.borderColor=’#6B8AFF33’},2000);
+  try{await navigator.clipboard.writeText(txt)}catch{const t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t)}
+  const orig=btn.textContent;btn.textContent='✓ コピーしました！';btn.style.background='#0d1a0d';btn.style.color='var(--grn)';btn.style.borderColor='#34C75933';
+  setTimeout(()=>{btn.textContent=orig;btn.style.background='#0d0d1a';btn.style.color='var(--blu)';btn.style.borderColor='#6B8AFF33'},2000);
 }
 
 // ══════════════════════════════
 //  LOG VIEW
 // ══════════════════════════════
-$(‘log-copy’).onclick=()=>copyText(genReport(todayStr()),$(‘log-copy’));
-$(‘log-filter’).onchange=renderLog;
+$('log-copy').onclick=()=>copyText(genReport(todayStr()),$('log-copy'));
+$('log-filter').onchange=renderLog;
 
 function renderLog(){
-$(‘log-report’).textContent=genReport(todayStr());
-const filt=$(‘log-filter’).value;
-const fl=filt===‘all’?logs:logs.filter(l=>l.exercise===filt);
-const grouped={};fl.forEach(l=>{if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l)});
-const dates=Object.keys(grouped).sort().reverse();
-if(!dates.length){$(‘log-list’).innerHTML=’<div style="color:var(--t4);text-align:center;padding:36px;font-size:13px">No records yet</div>’;return}
-let h=’’;
-dates.forEach(date=>{
-h+=`<div class="date-hdr"><span>${date}</span><button onclick="clearLogDay('${date}')">Clear day</button></div>`;
-grouped[date].forEach(entry=>{
-const idx=logs.indexOf(entry);
-h+=`<div class="card"> <div style="flex:1;cursor:pointer" onclick="openEditLog(${idx})"> <span style="color:var(--t2);font-size:13px;font-weight:600">${entry.exercise}</span> <span style="color:var(--t4);font-size:11px;margin-left:6px">Set${entry.set}</span> <div style="margin-top:2px"> <span class="mono" style="color:var(--red);font-weight:700;font-size:15px">${entry.reps}</span> <span style="color:var(--t4);font-size:10px"> reps</span> <span style="color:var(--t5);font-size:9px;margin-left:6px">${entry.repTime}s / ${entry.restTime}s</span> </div> </div> <div style="display:flex;gap:4px"> <button class="edit-btn" onclick="openEditLog(${idx})">✎</button> <button class="del" onclick="deleteLog(${idx})">✕</button> </div></div>`;
-});
-h+=’<div style="height:12px"></div>’;
-});
-$(‘log-list’).innerHTML=h;
+  $('log-report').textContent=genReport(todayStr());
+  const filt=$('log-filter').value;
+  const fl=filt==='all'?logs:logs.filter(l=>l.exercise===filt);
+  const grouped={};fl.forEach(l=>{if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l)});
+  const dates=Object.keys(grouped).sort().reverse();
+  if(!dates.length){$('log-list').innerHTML='<div style="color:var(--t4);text-align:center;padding:36px;font-size:13px">No records yet</div>';return}
+  let h='';
+  dates.forEach(date=>{
+    h+=`<div class="date-hdr"><span>${date}</span><button onclick="clearLogDay('${date}')">Clear day</button></div>`;
+    grouped[date].forEach(entry=>{
+      const idx=logs.indexOf(entry);
+      h+=`<div class="card">
+        <div style="flex:1;cursor:pointer" onclick="openEditLog(${idx})">
+          <span style="color:var(--t2);font-size:13px;font-weight:600">${entry.exercise}</span>
+          <span style="color:var(--t4);font-size:11px;margin-left:6px">Set${entry.set}</span>
+          <div style="margin-top:2px">
+            <span class="mono" style="color:var(--red);font-weight:700;font-size:15px">${entry.reps}</span>
+            <span style="color:var(--t4);font-size:10px"> reps</span>
+            <span style="color:var(--t5);font-size:9px;margin-left:6px">${entry.repTime}s / ${entry.restTime}s</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="edit-btn" onclick="openEditLog(${idx})">✎</button>
+          <button class="del" onclick="deleteLog(${idx})">✕</button>
+        </div></div>`;
+    });
+    h+='<div style="height:12px"></div>';
+  });
+  $('log-list').innerHTML=h;
 }
 
 window.openEditLog=openEditLog;
@@ -486,49 +489,70 @@ window.clearLogDay=d=>{if(confirm(`${d}の記録を全て削除しますか？`)
 // ══════════════════════════════
 //  MEAL VIEW
 // ══════════════════════════════
-let mealType=‘breakfast’;
-function renderMealTypes(){$(‘meal-types’).innerHTML=MEAL_TYPES.map(mt=>`<button class="${mt.id===mealType?'on':''}" onclick="setMealType('${mt.id}')">${mt.icon} ${mt.label}</button>`).join(’’)}
+let mealType='breakfast';
+function renderMealTypes(){$('meal-types').innerHTML=MEAL_TYPES.map(mt=>`<button class="${mt.id===mealType?'on':''}" onclick="setMealType('${mt.id}')">${mt.icon} ${mt.label}</button>`).join('')}
 renderMealTypes();
 window.setMealType=id=>{mealType=id;renderMealTypes()};
 
-$(‘m-add’).onclick=()=>{
-const c=$(‘m-content’).value.trim();if(!c)return;
-const cal=$(‘m-cal’).value?parseInt($(‘m-cal’).value):null;
-meals.push({date:todayStr(),time:nowTime(),type:mealType,content:c,calories:cal});
-saveMeals();$(‘m-content’).value=’’;$(‘m-cal’).value=’’;renderMeals();
+$('m-add').onclick=()=>{
+  const c=$('m-content').value.trim();if(!c)return;
+  const cal=$('m-cal').value?parseInt($('m-cal').value):null;
+  meals.push({date:todayStr(),time:nowTime(),type:mealType,content:c,calories:cal});
+  saveMeals();$('m-content').value='';$('m-cal').value='';renderMeals();
 };
 
-$(‘m-copy’).onclick=()=>{
-const dm=meals.filter(m=>m.date===todayStr());
-if(!dm.length){copyText(‘今日の食事記録なし’,$(‘m-copy’));return}
-const L=[`🍽️ ${todayStr()} 食事報告`];
-dm.forEach(m=>{const mt=MEAL_TYPES.find(t=>t.id===m.type);let l=`${mt?mt.icon:''} ${mt?mt.label:m.type}`;if(m.time)l+=` (${m.time})`;l+=`: ${m.content}`;if(m.calories)l+=` [${m.calories}kcal]`;L.push(l)});
-const tc=dm.reduce((s,m)=>s+(m.calories||0),0);if(tc>0)L.push(`\n合計: ${tc} kcal`);
-copyText(L.join(’\n’),$(‘m-copy’));
+$('m-copy').onclick=()=>{
+  const dm=meals.filter(m=>m.date===todayStr());
+  if(!dm.length){copyText('今日の食事記録なし',$('m-copy'));return}
+  const L=[`🍽️ ${todayStr()} 食事報告`];
+  dm.forEach(m=>{const mt=MEAL_TYPES.find(t=>t.id===m.type);let l=`${mt?mt.icon:''} ${mt?mt.label:m.type}`;if(m.time)l+=` (${m.time})`;l+=`: ${m.content}`;if(m.calories)l+=` [${m.calories}kcal]`;L.push(l)});
+  const tc=dm.reduce((s,m)=>s+(m.calories||0),0);if(tc>0)L.push(`\n合計: ${tc} kcal`);
+  copyText(L.join('\n'),$('m-copy'));
 };
 
 function renderMeals(){
-const d=todayStr(),dm=meals.filter(m=>m.date===d),past=meals.filter(m=>m.date!==d);
-const pg={};past.forEach(m=>{if(!pg[m.date])pg[m.date]=[];pg[m.date].push(m)});
-const pDates=Object.keys(pg).sort().reverse().slice(0,7);
-const tc=dm.reduce((s,m)=>s+(m.calories||0),0);
-let h=’’;
-if(dm.length){
-h+=`<div class="date-hdr"><span>TODAY</span>${tc>0?`<span class="mono" style="color:var(--org);font-size:11px">${tc} kcal</span>`:''}</div>`;
-dm.forEach(m=>{
-const idx=meals.indexOf(m),mt=MEAL_TYPES.find(t=>t.id===m.type);
-h+=`<div class="card" style="align-items:flex-start"> <div style="flex:1;cursor:pointer" onclick="openEditMeal(${idx})"> <div><span style="font-size:13px">${mt?mt.icon:''}</span> <span style="color:var(--t3);font-size:12px;font-weight:600;margin-left:4px">${mt?mt.label:m.type}</span> <span style="color:var(--t5);font-size:10px;margin-left:6px">${m.time}</span></div> <div style="color:var(--t2);font-size:13px;margin-top:3px;line-height:1.4">${m.content}</div> ${m.calories?`<div class="mono" style="color:var(--org);font-size:11px;margin-top:2px">${m.calories} kcal</div>`:''} </div> <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0"> <button class="edit-btn" onclick="openEditMeal(${idx})">✎</button> <button class="del" onclick="deleteMeal(${idx})">✕</button> </div></div>`;
-});
-}
-pDates.forEach(date=>{
-h+=`<div style="margin-top:14px"><div style="font-size:11px;color:var(--t4);font-weight:700;letter-spacing:2px;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin-bottom:5px">${date}</div>`;
-pg[date].forEach(m=>{
-const idx=meals.indexOf(m),mt=MEAL_TYPES.find(t=>t.id===m.type);
-h+=`<div class="card" style="align-items:flex-start"> <div style="flex:1;cursor:pointer" onclick="openEditMeal(${idx})"> <span style="font-size:12px">${mt?mt.icon:''}</span> <span style="color:var(--t3);font-size:11px;margin-left:4px">${mt?mt.label:m.type}</span> <span style="color:var(--t5);font-size:10px;margin-left:6px">${m.time||''}</span> <div style="color:var(--t3);font-size:12px;margin-top:2px">${m.content}${m.calories?` [${m.calories}kcal]`:''}</div> </div> <div style="display:flex;gap:4px;flex-shrink:0"> <button class="edit-btn" onclick="openEditMeal(${idx})">✎</button> <button class="del" onclick="deleteMeal(${idx})">✕</button> </div></div>`;
-});
-h+=’</div>’;
-});
-$(‘meal-list’).innerHTML=h||’<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">記録なし</div>’;
+  const d=todayStr(),dm=meals.filter(m=>m.date===d),past=meals.filter(m=>m.date!==d);
+  const pg={};past.forEach(m=>{if(!pg[m.date])pg[m.date]=[];pg[m.date].push(m)});
+  const pDates=Object.keys(pg).sort().reverse().slice(0,7);
+  const tc=dm.reduce((s,m)=>s+(m.calories||0),0);
+  let h='';
+  if(dm.length){
+    h+=`<div class="date-hdr"><span>TODAY</span>${tc>0?`<span class="mono" style="color:var(--org);font-size:11px">${tc} kcal</span>`:''}</div>`;
+    dm.forEach(m=>{
+      const idx=meals.indexOf(m),mt=MEAL_TYPES.find(t=>t.id===m.type);
+      h+=`<div class="card" style="align-items:flex-start">
+        <div style="flex:1;cursor:pointer" onclick="openEditMeal(${idx})">
+          <div><span style="font-size:13px">${mt?mt.icon:''}</span>
+          <span style="color:var(--t3);font-size:12px;font-weight:600;margin-left:4px">${mt?mt.label:m.type}</span>
+          <span style="color:var(--t5);font-size:10px;margin-left:6px">${m.time}</span></div>
+          <div style="color:var(--t2);font-size:13px;margin-top:3px;line-height:1.4">${m.content}</div>
+          ${m.calories?`<div class="mono" style="color:var(--org);font-size:11px;margin-top:2px">${m.calories} kcal</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button class="edit-btn" onclick="openEditMeal(${idx})">✎</button>
+          <button class="del" onclick="deleteMeal(${idx})">✕</button>
+        </div></div>`;
+    });
+  }
+  pDates.forEach(date=>{
+    h+=`<div style="margin-top:14px"><div style="font-size:11px;color:var(--t4);font-weight:700;letter-spacing:2px;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin-bottom:5px">${date}</div>`;
+    pg[date].forEach(m=>{
+      const idx=meals.indexOf(m),mt=MEAL_TYPES.find(t=>t.id===m.type);
+      h+=`<div class="card" style="align-items:flex-start">
+        <div style="flex:1;cursor:pointer" onclick="openEditMeal(${idx})">
+          <span style="font-size:12px">${mt?mt.icon:''}</span>
+          <span style="color:var(--t3);font-size:11px;margin-left:4px">${mt?mt.label:m.type}</span>
+          <span style="color:var(--t5);font-size:10px;margin-left:6px">${m.time||''}</span>
+          <div style="color:var(--t3);font-size:12px;margin-top:2px">${m.content}${m.calories?` [${m.calories}kcal]`:''}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="edit-btn" onclick="openEditMeal(${idx})">✎</button>
+          <button class="del" onclick="deleteMeal(${idx})">✕</button>
+        </div></div>`;
+    });
+    h+='</div>';
+  });
+  $('meal-list').innerHTML=h||'<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">記録なし</div>';
 }
 
 window.openEditMeal=openEditMeal;
@@ -539,65 +563,70 @@ window.deleteMeal=idx=>{meals.splice(idx,1);saveMeals();renderMeals()};
 // ══════════════════════════════
 let bodyChart=null;
 
-$(‘b-add’).onclick=()=>{
-const w=$(‘b-wt’).value,bf=$(‘b-bf’).value;if(!w&&!bf)return;
-bodyMetrics.push({date:todayStr(),time:nowTime(),weight:w?parseFloat(w):null,bodyFat:bf?parseFloat(bf):null});
-saveBody();$(‘b-wt’).value=’’;$(‘b-bf’).value=’’;renderBody();
+$('b-add').onclick=()=>{
+  const w=$('b-wt').value,bf=$('b-bf').value;if(!w&&!bf)return;
+  bodyMetrics.push({date:todayStr(),time:nowTime(),weight:w?parseFloat(w):null,bodyFat:bf?parseFloat(bf):null});
+  saveBody();$('b-wt').value='';$('b-bf').value='';renderBody();
 };
 
-$(‘b-copy’).onclick=()=>{
-const db=bodyMetrics.filter(m=>m.date===todayStr());
-if(!db.length){copyText(‘今日の体組成記録なし’,$(‘b-copy’));return}
-const b=db[db.length-1];let t=`🏋️ ${todayStr()} 体組成\n`;
-if(b.weight)t+=`体重: ${b.weight} kg\n`;if(b.bodyFat)t+=`体脂肪率: ${b.bodyFat} %`;
-copyText(t,$(‘b-copy’));
+$('b-copy').onclick=()=>{
+  const db=bodyMetrics.filter(m=>m.date===todayStr());
+  if(!db.length){copyText('今日の体組成記録なし',$('b-copy'));return}
+  const b=db[db.length-1];let t=`🏋️ ${todayStr()} 体組成\n`;
+  if(b.weight)t+=`体重: ${b.weight} kg\n`;if(b.bodyFat)t+=`体脂肪率: ${b.bodyFat} %`;
+  copyText(t,$('b-copy'));
 };
 
 function renderBody(){
-const byDate={};bodyMetrics.forEach(m=>{byDate[m.date]=m});
-const cd=Object.values(byDate).sort((a,b)=>a.date.localeCompare(b.date));
-if(cd.length>=2){
-$(‘chart-wrap’).style.display=’’;
-if(bodyChart)bodyChart.destroy();
-bodyChart=new Chart($(‘body-chart’),{
-type:‘line’,
-data:{labels:cd.map(m=>m.date.slice(5)),
-datasets:[
-{label:‘Weight (kg)’,data:cd.map(m=>m.weight),borderColor:’#FF3B30’,backgroundColor:’#FF3B3022’,tension:.3,pointRadius:3,yAxisID:‘y’,spanGaps:true},
-{label:‘Body Fat (%)’,data:cd.map(m=>m.bodyFat),borderColor:’#34C759’,backgroundColor:’#34C75922’,tension:.3,pointRadius:3,yAxisID:‘y1’,spanGaps:true},
-]},
-options:{responsive:true,maintainAspectRatio:false,
-plugins:{legend:{labels:{color:’#888’,font:{size:10}}}},
-scales:{
-x:{ticks:{color:’#555’,font:{size:9}},grid:{color:’#1e1e1e’}},
-y:{position:‘left’,ticks:{color:’#FF3B30’,font:{size:9}},grid:{color:’#1e1e1e’}},
-y1:{position:‘right’,ticks:{color:’#34C759’,font:{size:9}},grid:{drawOnChartArea:false}},
-}}
-});
-} else {$(‘chart-wrap’).style.display=‘none’}
-if(!bodyMetrics.length){$(‘body-list’).innerHTML=’<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">No records yet</div>’;return}
-let h=’’;
-[…bodyMetrics].reverse().forEach((m,i)=>{
-const idx=bodyMetrics.length-1-i;
-h+=`<div class="card"> <div style="color:var(--t3);font-size:11px">${m.date} ${m.time||''}</div> <div style="display:flex;align-items:center;gap:12px"> ${m.weight?`<span class="mono" style="color:var(--red);font-weight:700;font-size:13px">${m.weight}<span style="color:var(--t4);font-size:9px"> kg</span></span>`:''} ${m.bodyFat?`<span class="mono" style="color:var(--grn);font-weight:700;font-size:13px">${m.bodyFat}<span style="color:var(--t4);font-size:9px"> %</span></span>`:''} <button class="del" onclick="deleteBody(${idx})">✕</button> </div></div>`;
-});
-$(‘body-list’).innerHTML=h;
+  const byDate={};bodyMetrics.forEach(m=>{byDate[m.date]=m});
+  const cd=Object.values(byDate).sort((a,b)=>a.date.localeCompare(b.date));
+  if(cd.length>=2){
+    $('chart-wrap').style.display='';
+    if(bodyChart)bodyChart.destroy();
+    bodyChart=new Chart($('body-chart'),{
+      type:'line',
+      data:{labels:cd.map(m=>m.date.slice(5)),
+        datasets:[
+          {label:'Weight (kg)',data:cd.map(m=>m.weight),borderColor:'#FF3B30',backgroundColor:'#FF3B3022',tension:.3,pointRadius:3,yAxisID:'y',spanGaps:true},
+          {label:'Body Fat (%)',data:cd.map(m=>m.bodyFat),borderColor:'#34C759',backgroundColor:'#34C75922',tension:.3,pointRadius:3,yAxisID:'y1',spanGaps:true},
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#888',font:{size:10}}}},
+        scales:{
+          x:{ticks:{color:'#555',font:{size:9}},grid:{color:'#1e1e1e'}},
+          y:{position:'left',ticks:{color:'#FF3B30',font:{size:9}},grid:{color:'#1e1e1e'}},
+          y1:{position:'right',ticks:{color:'#34C759',font:{size:9}},grid:{drawOnChartArea:false}},
+        }}
+    });
+  } else {$('chart-wrap').style.display='none'}
+  if(!bodyMetrics.length){$('body-list').innerHTML='<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">No records yet</div>';return}
+  let h='';
+  [...bodyMetrics].reverse().forEach((m,i)=>{
+    const idx=bodyMetrics.length-1-i;
+    h+=`<div class="card">
+      <div style="color:var(--t3);font-size:11px">${m.date} ${m.time||''}</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        ${m.weight?`<span class="mono" style="color:var(--red);font-weight:700;font-size:13px">${m.weight}<span style="color:var(--t4);font-size:9px"> kg</span></span>`:''}
+        ${m.bodyFat?`<span class="mono" style="color:var(--grn);font-weight:700;font-size:13px">${m.bodyFat}<span style="color:var(--t4);font-size:9px"> %</span></span>`:''}
+        <button class="del" onclick="deleteBody(${idx})">✕</button>
+      </div></div>`;
+  });
+  $('body-list').innerHTML=h;
 }
 
 window.deleteBody=idx=>{bodyMetrics.splice(idx,1);saveBody();renderBody()};
 
 // ── Clean up old service workers ──
-if(‘serviceWorker’ in navigator){
-navigator.serviceWorker.getRegistrations().then(function(regs){
-regs.forEach(function(r){r.unregister()});
-});
-if(‘caches’ in window){
-caches.keys().then(function(keys){
-keys.forEach(function(k){caches.delete(k)});
-});
-}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){r.unregister()});
+  });
+  if('caches' in window){
+    caches.keys().then(function(keys){
+      keys.forEach(function(k){caches.delete(k)});
+    });
+  }
 }
 </script>
-
 </body>
 </html>
