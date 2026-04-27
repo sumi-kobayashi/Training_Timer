@@ -884,8 +884,9 @@ $('d-save-client-id').onclick=function(){
   if(!id){alert('Client IDを入力してください');return}
   gClientId=id;
   LS.set('rt-gclient-id',gClientId);
-  initTokenClient();
+  try{initTokenClient()}catch(e){console.log(e)}
   updateSyncUI();
+  alert('✓ Client IDを保存しました。次に「Googleアカウントでログイン」をタップしてください。');
 };
 
 $('d-google-signin').onclick=function(){doSignIn()};
