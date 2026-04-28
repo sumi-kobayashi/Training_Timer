@@ -10,10 +10,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0a0a0a">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='108' fill='%230a0a0a'/%3E%3Ccircle cx='256' cy='240' r='130' fill='none' stroke='%23FF3B30' stroke-width='18' stroke-linecap='round' stroke-dasharray='600 220'/%3E%3Ctext x='256' y='260' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='100' fill='%23f0f0f0'%3E4.0%3C/text%3E%3Ctext x='256' y='430' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='52' fill='%23FF3B30' letter-spacing='12'%3EREP%3C/text%3E%3C/svg%3E">
 <title>Rep Timer</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#0a0a0a;--c1:#111;--c2:#1e1e1e;--red:#FF3B30;--grn:#34C759;--org:#FF9500;--blu:#6B8AFF;--t1:#f0f0f0;--t2:#ccc;--t3:#888;--t4:#555;--t5:#333;--mono:'JetBrains Mono',ui-monospace,monospace}
@@ -60,7 +58,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 .date-hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--c2);padding-bottom:5px;margin-bottom:6px}
 .date-hdr span{font-size:11px;color:var(--red);font-weight:700;letter-spacing:2px}
 .date-hdr button{background:0;border:0;color:var(--t5);font-size:10px;cursor:pointer}
-/* Modal */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:flex-end;justify-content:center}
 .modal-bg.on{display:flex}
 .modal{background:#1a1a1a;border-radius:16px 16px 0 0;padding:20px 18px 30px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
@@ -73,7 +70,7 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </head>
 <body>
 
-<div class="hdr"><h1>Rep Timer</h1><p>TRAINING COMPANION v8</p></div>
+<div class="hdr"><h1>Rep Timer</h1><p>TRAINING COMPANION v9</p></div>
 
 <div class="tabs" id="tabs">
   <button data-v="timer" class="on">Timer</button>
@@ -158,157 +155,87 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
   <div id="body-list"></div>
 </div>
 
-<!-- DATA BACKUP -->
+<!-- DATA -->
 
 <div class="view" id="v-data">
-  <!-- Google Drive sync -->
   <div style="text-align:center;margin-bottom:14px">
-    <div style="font-size:36px;margin-bottom:4px">☁️</div>
-    <div style="font-size:15px;font-weight:700;color:var(--t1)">Google Drive Sync</div>
-    <div style="font-size:11px;color:var(--t4);margin-top:4px">Googleアカウントに自動バックアップ</div>
+    <div style="font-size:36px;margin-bottom:4px">💾</div>
+    <div style="font-size:15px;font-weight:700;color:var(--t1)">Data Backup</div>
+    <div style="font-size:11px;color:var(--t4);margin-top:4px">手動バックアップでデータを守ってください</div>
   </div>
-
-  <!-- Step 1: Client ID setup (first time only) -->
-
-  <div id="d-setup" style="margin-bottom:18px">
-    <div style="background:var(--c1);border-radius:10px;padding:14px;margin-bottom:10px">
-      <div style="font-size:12px;color:var(--t2);font-weight:700;margin-bottom:8px">初回セットアップ</div>
-      <div style="font-size:11px;color:var(--t4);margin-bottom:10px;line-height:1.6">Google Cloud ConsoleでClient IDを取得して貼り付けてください。<br>手順はREADMEを参照。</div>
-      <input id="d-client-id" class="inp inp-l mono" placeholder="Client ID を貼り付け..." style="font-size:10px;margin-bottom:8px">
-      <button id="d-save-client-id" class="btn" style="width:100%">保存して次へ</button>
-    </div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+    <button id="d-export-file" class="copy-btn" style="background:#0d1a0d;color:var(--grn);border-color:#34C75933">📥 JSONファイルをダウンロード</button>
+    <button id="d-export-clip" class="copy-btn" style="background:#0d0d1a;color:var(--blu);border-color:#6B8AFF33">📋 クリップボードにコピー</button>
   </div>
-
-  <!-- Step 2: Sign in -->
-
-  <div id="d-signin" style="display:none;margin-bottom:18px">
-    <button id="d-google-signin" class="copy-btn" style="background:#1a2a1a;color:var(--grn);border-color:#34C75933;font-size:15px;padding:14px">🔑 Googleアカウントでログイン</button>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+    <label class="lbl">復元</label>
+    <button id="d-import-file" class="copy-btn" style="background:#1a1a0d;color:var(--org);border-color:#FF950033">📂 JSONファイルから復元</button>
+    <input type="file" id="d-file-input" accept=".json" style="display:none">
   </div>
-
-  <!-- Step 3: Connected state -->
-
-  <div id="d-connected" style="display:none;margin-bottom:18px">
-    <div style="background:#0d1a0d;border:1px solid #34C75933;border-radius:10px;padding:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <span style="color:var(--grn);font-size:14px;font-weight:700">✓ Google Drive 同期中</span>
-        <button id="d-signout" style="background:0;border:1px solid #FF3B3033;color:var(--red);border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer">Sign Out</button>
-      </div>
-      <div id="d-sync-status" style="font-size:11px;color:var(--t4)"></div>
-      <button id="d-force-sync" style="margin-top:8px;width:100%;padding:9px;background:var(--c1);color:var(--blu);border:1px solid #6B8AFF33;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🔄 今すぐ同期</button>
-    </div>
-  </div>
-
   <div class="sep"></div>
-
-  <!-- Manual backup -->
-
-  <details style="margin-bottom:14px">
-    <summary style="font-size:12px;color:var(--t4);cursor:pointer;padding:6px 0">📁 手動バックアップ（ファイル）</summary>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
-      <button id="d-export-file" class="copy-btn" style="background:#0d1a0d;color:var(--grn);border-color:#34C75933;font-size:12px;padding:9px">📥 JSONファイルをダウンロード</button>
-      <button id="d-import-file" class="copy-btn" style="background:#1a1a0d;color:var(--org);border-color:#FF950033;font-size:12px;padding:9px">📂 JSONファイルから復元</button>
-      <input type="file" id="d-file-input" accept=".json" style="display:none">
-    </div>
-  </details>
-
   <div style="margin-bottom:14px">
     <label class="lbl">データ状況</label>
     <div id="d-stats" style="background:var(--c1);border-radius:8px;padding:12px;font-size:12px;color:var(--t3);line-height:1.8"></div>
   </div>
-
-<button id="d-clear" style="width:100%;padding:11px;background:#1a0d0d;color:var(--red);border:1px solid #FF3B3033;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">⚠️ 全データ削除</button>
-
+  <button id="d-clear" style="width:100%;padding:11px;background:#1a0d0d;color:var(--red);border:1px solid #FF3B3033;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">⚠️ 全データ削除</button>
 </div>
 
 <!-- EDIT MODAL -->
 
-<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+<div class="modal-bg" id="modal-bg">
   <div class="modal" id="modal"></div>
 </div>
 
 <script>
-// ── Error display (debug) ──
-window.onerror=function(msg,src,line,col,err){
+// Error display
+window.onerror=function(msg,src,line){
   var d=document.createElement('div');
-  d.style.cssText='position:fixed;top:0;left:0;right:0;background:red;color:white;padding:12px;font-size:11px;z-index:9999;word-break:break-all';
-  d.textContent='ERROR line '+line+': '+msg;
+  d.style.cssText='position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;font-size:11px;z-index:9999';
+  d.textContent='ERR L'+line+': '+msg;
   document.body.appendChild(d);
 };
 
-// ── Storage ──
-const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-let exercises=LS.get('rt-exercises',[]);
-let logs=LS.get('rt-logs',[]);
-let bodyMetrics=LS.get('rt-body',[]);
-let meals=LS.get('rt-meals',[]);
-let settings=LS.get('rt-settings',{repTime:4,restTime:60,snd:true});
+// Storage
+var LS={
+  get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+var exercises=LS.get('rt-exercises',[]);
+var logs=LS.get('rt-logs',[]);
+var bodyMetrics=LS.get('rt-body',[]);
+var meals=LS.get('rt-meals',[]);
+var settings=LS.get('rt-settings',{repTime:4,restTime:60,snd:true});
+
 var saveEx=function(){LS.set('rt-exercises',exercises)};
 var saveLogs=function(){LS.set('rt-logs',logs)};
 var saveBody=function(){LS.set('rt-body',bodyMetrics)};
 var saveMeals=function(){LS.set('rt-meals',meals)};
 var saveSets=function(){LS.set('rt-settings',settings)};
-const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
-const nowTime=()=>new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
-const $=id=>document.getElementById(id);
 
-// ── Audio ──
-let _ac=null;
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function nowTime(){return new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}
+function $(id){return document.getElementById(id)}
+
+// Audio
+var _ac=null;
 function ac(){
   if(!_ac||_ac.state==='closed')_ac=new(window.AudioContext||window.webkitAudioContext)();
   if(_ac.state==='suspended')_ac.resume();
   return _ac;
 }
-
-// Generate tiny silent WAV to switch iOS to media audio mode
-function makeSilentWav(){
-  const sr=8000,len=sr; // 1 second of silence
-  const buf=new ArrayBuffer(44+len*2),d=new DataView(buf);
-  function ws(o,s){for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i))}
-  ws(0,'RIFF');d.setUint32(4,36+len*2,true);ws(8,'WAVE');ws(12,'fmt ');
-  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,1,true);
-  d.setUint32(24,sr,true);d.setUint32(28,sr*2,true);d.setUint16(32,2,true);
-  d.setUint16(34,16,true);ws(36,'data');d.setUint32(40,len*2,true);
-  // all samples stay 0 = silence
-  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
-}
-
-let silentEl=null;
-function initMediaAudio(){
-  if(silentEl)return;
-  try{
-    silentEl=document.createElement('audio');
-    silentEl.src=makeSilentWav();
-    silentEl.loop=true;
-    silentEl.volume=0.01;
-    silentEl.play().catch(function(){});
-  }catch(e){silentEl=null}
-}
-
-document.addEventListener('visibilitychange',function(){
-  if(!document.hidden){
-    if(_ac&&_ac.state==='suspended')_ac.resume();
-    if(silentEl&&silentEl.paused)silentEl.play().catch(function(){});
-  }
-});
-document.addEventListener('touchstart',function(){
-  if(_ac&&_ac.state==='suspended')_ac.resume();
-  if(silentEl&&silentEl.paused)silentEl.play().catch(function(){});
-},{passive:true});
-
 function tone(f,d,v,t){
-  v=v||1.0;t=t||'square';
+  v=v||0.8;t=t||'square';
   try{
-    var c=ac();
-    var o=c.createOscillator(),g=c.createGain();
+    var c=ac(),o=c.createOscillator(),g=c.createGain();
     o.frequency.value=f;o.type=t;
     g.gain.setValueAtTime(v,c.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d/1000);
-    o.connect(g).connect(c.destination);
-    o.start();o.stop(c.currentTime+d/1000+0.05);
+    o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+d/1000+0.05);
   }catch(e){}
 }
 var SFX={
-  repTick:function(){tone(1000,70,0.9,'sine')},
+  repTick:function(){tone(1000,70,0.8,'sine')},
   repDone:function(){tone(1320,90,1.0,'sine')},
   setStart:function(){tone(523,110,0.8,'sine');setTimeout(function(){tone(659,110,0.8,'sine')},110);setTimeout(function(){tone(784,150,1.0,'sine')},220)},
   restStart:function(){tone(880,130,1.0,'square');setTimeout(function(){tone(660,160,0.9,'square')},160)},
@@ -317,42 +244,31 @@ var SFX={
   warn10:function(){tone(600,230,0.9,'sine');setTimeout(function(){tone(800,230,0.9,'sine')},240)}
 };
 
-// ── Wake Lock (prevent auto-lock) ──
-let wakeLock=null;
-async function requestWakeLock(){
-  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen')}}catch(e){}
-}
-async function releaseWakeLock(){
-  try{if(wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}
-}
-// Re-acquire wake lock when returning to app (iOS releases it on switch)
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode!=='idle')requestWakeLock()});
+// Wake Lock
+var wakeLock=null;
+function requestWakeLock(){try{if('wakeLock' in navigator){navigator.wakeLock.request('screen').then(function(w){wakeLock=w}).catch(function(){})}}catch(e){}}
+function releaseWakeLock(){try{if(wakeLock){wakeLock.release();wakeLock=null}}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&mode!=='idle')requestWakeLock()});
 
-// ── Modal ──
+// Modal
 function closeModal(){$('modal-bg').classList.remove('on')}
+$('modal-bg').onclick=function(e){if(e.target===$('modal-bg'))closeModal()};
 
 function openEditLog(idx){
-  const e=logs[idx]; if(!e)return;
-  $('modal').innerHTML=`<h3>トレーニング編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3>
-    <div class="row"><div><label class="lbl">Exercise</label><input id="ed-ex" class="inp inp-l" value="${e.exercise}" style="font-size:13px"></div></div>
-    <div class="row">
-      <div><label class="lbl">Set #</label><input id="ed-set" type="number" class="inp mono" value="${e.set}" min="1"></div>
-      <div><label class="lbl">Reps</label><input id="ed-reps" type="number" class="inp mono" value="${e.reps}" min="0"></div>
-    </div>
-    <div class="row">
-      <div><label class="lbl">Rep Time</label><input id="ed-rt" type="number" class="inp mono" value="${e.repTime}" step="0.5"></div>
-      <div><label class="lbl">Rest Time</label><input id="ed-rest" type="number" class="inp mono" value="${e.restTime}"></div>
-    </div>
-    <div class="row"><div><label class="lbl">Time</label><input id="ed-time" type="time" class="inp mono" value="${e.time||''}" style="font-size:13px"></div>
-      <div><label class="lbl">Date</label><input id="ed-date" type="date" class="inp mono" value="${e.date}" style="font-size:13px"></div></div>
-    <div class="actions">
-      <button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>
-      <button style="background:var(--red);color:#fff" onclick="saveEditLog(${idx})">Save</button>
-    </div>`;
+  var e=logs[idx];if(!e)return;
+  $('modal').innerHTML='<h3>トレーニング編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3>'+
+    '<div class="row"><div><label class="lbl">Exercise</label><input id="ed-ex" class="inp inp-l" value="'+e.exercise+'" style="font-size:13px"></div></div>'+
+    '<div class="row"><div><label class="lbl">Set #</label><input id="ed-set" type="number" class="inp mono" value="'+e.set+'" min="1"></div>'+
+    '<div><label class="lbl">Reps</label><input id="ed-reps" type="number" class="inp mono" value="'+e.reps+'" min="0"></div></div>'+
+    '<div class="row"><div><label class="lbl">Rep Time</label><input id="ed-rt" type="number" class="inp mono" value="'+e.repTime+'" step="0.5"></div>'+
+    '<div><label class="lbl">Rest Time</label><input id="ed-rest" type="number" class="inp mono" value="'+e.restTime+'"></div></div>'+
+    '<div class="row"><div><label class="lbl">Time</label><input id="ed-time" type="time" class="inp mono" value="'+(e.time||'')+'" style="font-size:13px"></div>'+
+    '<div><label class="lbl">Date</label><input id="ed-date" type="date" class="inp mono" value="'+e.date+'" style="font-size:13px"></div></div>'+
+    '<div class="actions"><button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>'+
+    '<button style="background:var(--red);color:#fff" onclick="saveEditLog('+idx+')">Save</button></div>';
   $('modal-bg').classList.add('on');
 }
-
-window.saveEditLog=idx=>{
+window.saveEditLog=function(idx){
   logs[idx].exercise=$('ed-ex').value.trim()||logs[idx].exercise;
   logs[idx].set=parseInt($('ed-set').value)||logs[idx].set;
   logs[idx].reps=parseInt($('ed-reps').value)||0;
@@ -360,109 +276,101 @@ window.saveEditLog=idx=>{
   logs[idx].restTime=parseInt($('ed-rest').value)||logs[idx].restTime;
   logs[idx].time=$('ed-time').value||logs[idx].time;
   logs[idx].date=$('ed-date').value||logs[idx].date;
-  saveLogs(); closeModal(); renderLog();
+  saveLogs();closeModal();renderLog();
 };
 
 function openEditMeal(idx){
-  const m=meals[idx]; if(!m)return;
-  const mtOpts=MEAL_TYPES.map(t=>`<option value="${t.id}"${t.id===m.type?' selected':''}>${t.icon} ${t.label}</option>`).join('');
-  $('modal').innerHTML=`<h3>食事編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3>
-    <div class="row"><div><label class="lbl">Type</label><select id="ed-mtype" class="inp inp-l" style="font-size:13px">${mtOpts}</select></div></div>
-    <div class="row"><div><label class="lbl">Content</label><textarea id="ed-mcont" class="inp" rows="2" style="font-size:13px;text-align:left">${m.content}</textarea></div></div>
+  var m=meals[idx];if(!m)return;
+  var opts=MEAL_TYPES.map(function(t){return '<option value="'+t.id+'"'+(t.id===m.type?' selected':'')+'>'+t.icon+' '+t.label+'</option>'}).join('');
+  $('modal').innerHTML='<h3>食事編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3>'+
+    '<div class="row"><div><label class="lbl">Type</label><select id="ed-mtype" class="inp inp-l" style="font-size:13px">'+opts+'</select></div></div>'+
+    '<div class="row"><div><label class="lbl">Content</label><textarea id="ed-mcont" class="inp" rows="2" style="font-size:13px;text-align:left">'+m.content+'</textarea></div></div>'+
 
 ```
-<div class="row">
-  <div><label class="lbl">kcal</label><input id="ed-mcal" type="number" class="inp mono" value="${m.calories||''}" placeholder="任意"></div>
-  <div><label class="lbl">Time</label><input id="ed-mtime" type="time" class="inp mono" value="${m.time||''}" style="font-size:13px"></div>
-</div>
-<div class="row"><div><label class="lbl">Date</label><input id="ed-mdate" type="date" class="inp mono" value="${m.date}" style="font-size:13px"></div><div></div></div>
-<div class="actions">
-  <button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>
-  <button style="background:var(--red);color:#fff" onclick="saveEditMeal(${idx})">Save</button>
-</div>`;
+'<div class="row"><div><label class="lbl">kcal</label><input id="ed-mcal" type="number" class="inp mono" value="'+(m.calories||'')+'" placeholder="任意"></div>'+
+'<div><label class="lbl">Time</label><input id="ed-mtime" type="time" class="inp mono" value="'+(m.time||'')+'" style="font-size:13px"></div></div>'+
+'<div class="row"><div><label class="lbl">Date</label><input id="ed-mdate" type="date" class="inp mono" value="'+m.date+'" style="font-size:13px"></div><div></div></div>'+
+'<div class="actions"><button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>'+
+'<button style="background:var(--red);color:#fff" onclick="saveEditMeal('+idx+')">Save</button></div>';
 ```
 
 $(‘modal-bg’).classList.add(‘on’);
 }
-
-window.saveEditMeal=idx=>{
+window.saveEditMeal=function(idx){
 meals[idx].type=$(‘ed-mtype’).value;
 meals[idx].content=$(‘ed-mcont’).value.trim()||meals[idx].content;
 meals[idx].calories=$(‘ed-mcal’).value?parseInt($(‘ed-mcal’).value):null;
 meals[idx].time=$(‘ed-mtime’).value||meals[idx].time;
 meals[idx].date=$(‘ed-mdate’).value||meals[idx].date;
-saveMeals(); closeModal(); renderMeals();
+saveMeals();closeModal();renderMeals();
 };
 
-// ── Tabs ──
-const views=[‘timer’,‘log’,‘meal’,‘body’,‘data’];
-document.querySelectorAll(’#tabs button’).forEach(b=>{
-b.onclick=()=>{
-document.querySelectorAll(’#tabs button’).forEach(x=>x.classList.remove(‘on’));
+// Tabs
+var views=[‘timer’,‘log’,‘meal’,‘body’,‘data’];
+document.querySelectorAll(’#tabs button’).forEach(function(b){
+b.onclick=function(){
+document.querySelectorAll(’#tabs button’).forEach(function(x){x.classList.remove(‘on’)});
 b.classList.add(‘on’);
-views.forEach(v=>{const el=$(‘v-’+v);el.classList.toggle(‘on’,v===b.dataset.v);el.style.display=v===b.dataset.v?(v===‘timer’?‘flex’:‘block’):‘none’});
+views.forEach(function(v){var el=$(‘v-’+v);el.classList.toggle(‘on’,v===b.dataset.v);el.style.display=v===b.dataset.v?(v===‘timer’?‘flex’:‘block’):‘none’});
 if(b.dataset.v===‘log’)renderLog();if(b.dataset.v===‘meal’)renderMeals();if(b.dataset.v===‘body’)renderBody();if(b.dataset.v===‘data’)renderDataStats();
 };
 });
 
-const MEAL_TYPES=[
+var MEAL_TYPES=[
 {id:‘breakfast’,label:‘朝食’,icon:‘🍳’},{id:‘lunch’,label:‘昼食’,icon:‘🍛’},
 {id:‘dinner’,label:‘夕食’,icon:‘🍖’},{id:‘snack’,label:‘間食’,icon:‘🍪’},
-{id:‘supplement’,label:‘サプリ’,icon:‘💊’},
+{id:‘supplement’,label:‘サプリ’,icon:‘💊’}
 ];
 
-// ══════════════════════════════
-//  TIMER
-// ══════════════════════════════
-const CIRC=2*Math.PI*118;
-let mode=‘idle’,tLeft=0,repCount=0,setCount=0,totalReps=0;
-let iv=null,tRef=0,rRef=0,lastCd=-1,lastSec=-1,warned10=false;
+// ═══ TIMER ═══
+var CIRC=2*Math.PI*118;
+var mode=‘idle’,tLeft=0,repCount=0,setCount=0,totalReps=0;
+var iv=null,tRef=0,rRef=0,lastCd=-1,lastSec=-1,warned10=false;
 
 $(‘t-rep’).value=settings.repTime;
 $(‘t-rest’).value=settings.restTime;
 
-function updateSndBtn(){const b=$(‘t-snd’);b.textContent=settings.snd?‘🔊 ON’:‘🔇 OFF’;b.style.background=settings.snd?’#0d1a0d’:’#1a0d0d’;b.style.color=settings.snd?‘var(–grn)’:‘var(–red)’;b.style.borderColor=settings.snd?’#34C75933’:’#FF3B3033’}
+function updateSndBtn(){var b=$(‘t-snd’);b.textContent=settings.snd?‘🔊 ON’:‘🔇 OFF’;b.style.background=settings.snd?’#0d1a0d’:’#1a0d0d’;b.style.color=settings.snd?‘var(–grn)’:‘var(–red)’;b.style.borderColor=settings.snd?’#34C75933’:’#FF3B3033’}
 updateSndBtn();
-$(‘t-snd’).onclick=()=>{settings.snd=!settings.snd;saveSets();updateSndBtn()};
+$(‘t-snd’).onclick=function(){settings.snd=!settings.snd;saveSets();updateSndBtn()};
 
 function getRepTime(){return parseFloat($(‘t-rep’).value)||4}
 function getRestTime(){return parseInt($(‘t-rest’).value)||60}
-$(‘t-rep’).oninput=()=>{settings.repTime=getRepTime();saveSets()};
-$(‘t-rest’).oninput=()=>{settings.restTime=getRestTime();saveSets()};
+$(‘t-rep’).oninput=function(){settings.repTime=getRepTime();saveSets()};
+$(‘t-rest’).oninput=function(){settings.restTime=getRestTime();saveSets()};
 
 function renderExSelect(){
-const s=$(‘t-ex’),cur=s.value;
-s.innerHTML=exercises.length===0?’<option value="">No exercises</option>’:exercises.map(e=>`<option value="${e}">${e}</option>`).join(’’);
-if(exercises.includes(cur))s.value=cur;
+var s=$(‘t-ex’),cur=s.value;
+s.innerHTML=exercises.length===0?’<option value="">No exercises</option>’:exercises.map(function(e){return ‘<option value="'+e+'">’+e+’</option>’}).join(’’);
+if(exercises.indexOf(cur)>=0)s.value=cur;
 $(‘t-delex’).style.display=exercises.length>0?’’:‘none’;
-$(‘t-delex’).textContent=`Delete "${$('t-ex').value}"`;
-const lf=$(‘log-filter’),lfv=lf.value;
-lf.innerHTML=’<option value="all">All Exercises</option>’+exercises.map(e=>`<option value="${e}">${e}</option>`).join(’’);
-if(exercises.includes(lfv)||lfv===‘all’)lf.value=lfv;
+$(‘t-delex’).textContent=‘Delete “’+$(‘t-ex’).value+’”’;
+var lf=$(‘log-filter’),lfv=lf.value;
+lf.innerHTML=’<option value="all">All Exercises</option>’+exercises.map(function(e){return ‘<option value="'+e+'">’+e+’</option>’}).join(’’);
+if(exercises.indexOf(lfv)>=0||lfv===‘all’)lf.value=lfv;
 }
 renderExSelect();
-$(‘t-ex’).onchange=()=>{$(‘t-delex’).textContent=`Delete "${$('t-ex').value}"`};
-$(‘t-addex’).onclick=()=>{const v=$(‘t-newex’).value.trim();if(v&&!exercises.includes(v)){exercises.push(v);saveEx();renderExSelect();$(‘t-ex’).value=v;$(‘t-delex’).textContent=`Delete "${v}"`}$(‘t-newex’).value=’’};
-$(‘t-newex’).onkeydown=e=>{if(e.key===‘Enter’)$(‘t-addex’).click()};
-$(‘t-delex’).onclick=()=>{const v=$(‘t-ex’).value;exercises=exercises.filter(e=>e!==v);saveEx();renderExSelect()};
+$(‘t-ex’).onchange=function(){$(‘t-delex’).textContent=‘Delete “’+$(‘t-ex’).value+’”’};
+$(‘t-addex’).onclick=function(){var v=$(‘t-newex’).value.trim();if(v&&exercises.indexOf(v)<0){exercises.push(v);saveEx();renderExSelect();$(‘t-ex’).value=v;$(‘t-delex’).textContent=‘Delete “’+v+’”’}$(‘t-newex’).value=’’};
+$(‘t-newex’).onkeydown=function(e){if(e.key===‘Enter’)$(‘t-addex’).click()};
+$(‘t-delex’).onclick=function(){var v=$(‘t-ex’).value;exercises=exercises.filter(function(e){return e!==v});saveEx();renderExSelect()};
 
 function updateRing(){
-const rt=getRepTime(),rest=getRestTime();
-let prog=0;
+var rt=getRepTime(),rest=getRestTime(),prog=0;
 if(mode===‘rep’)prog=(rt-tLeft)/rt;else if(mode===‘rest’)prog=(rest-tLeft)/rest;
-const col=mode===‘rep’?‘var(–red)’:mode===‘rest’?‘var(–grn)’:’#444’;
+var col=mode===‘rep’?‘var(–red)’:mode===‘rest’?‘var(–grn)’:’#444’;
 $(‘ring-arc’).setAttribute(‘stroke’,col);$(‘ring-arc’).setAttribute(‘stroke-dashoffset’,CIRC*(1-prog));
 $(‘ring-label’).textContent=mode===‘idle’?‘Ready’:mode===‘rep’?‘Rep’:‘Rest’;
 $(‘ring-label’).style.color=col;
 if(mode===‘idle’)$(‘ring-time’).textContent=‘0.0’;
 else if(mode===‘rest’&&tLeft>9.95)$(‘ring-time’).textContent=Math.ceil(tLeft);
 else $(‘ring-time’).textContent=tLeft.toFixed(1);
-$(‘ring-rep’).textContent=mode===‘rep’?`Rep #${repCount}`:’’;
+$(‘ring-rep’).textContent=mode===‘rep’?‘Rep #’+repCount:’’;
 $(‘st-sets’).textContent=setCount;$(‘st-reps’).textContent=repCount;$(‘st-total’).textContent=totalReps;
 }
 
 function updateMainBtn(){
-const b=$(‘t-main’);
+var b=$(‘t-main’);
 if(mode===‘idle’){b.textContent=‘▶ START’;b.style.background=‘var(–red)’}
 else if(mode===‘rep’){b.textContent=‘⏸ REST’;b.style.background=‘var(–grn)’}
 else{b.textContent=‘⏩ SKIP’;b.style.background=‘var(–org)’}
@@ -472,13 +380,13 @@ $(‘t-reset’).style.display=mode===‘idle’?‘none’:’’;
 function stop(){if(iv){clearInterval(iv);iv=null}}
 
 function startRep(){
-stop();requestWakeLock();const rt=getRepTime();
+stop();requestWakeLock();var rt=getRepTime();
 mode=‘rep’;tRef=rt;tLeft=rt;lastSec=-1;lastCd=-1;
 if(settings.snd)SFX.setStart();
 updateMainBtn();updateRing();
-iv=setInterval(()=>{
+iv=setInterval(function(){
 tRef-=0.1;
-const sec=Math.floor(tRef);
+var sec=Math.floor(tRef);
 if(sec!==lastSec&&sec>=0&&tRef>0.05){lastSec=sec;if(settings.snd)SFX.repTick()}
 if(tRef<=0){rRef++;repCount=rRef;totalReps++;if(settings.snd)SFX.repDone();tRef=rt;lastSec=-1}
 tLeft=Math.max(0,tRef);updateRing();
@@ -486,16 +394,16 @@ tLeft=Math.max(0,tRef);updateRing();
 }
 
 function startRest(){
-stop();const reps=rRef,rt=getRepTime(),rest=getRestTime();
+stop();var reps=rRef,rt=getRepTime(),rest=getRestTime();
 mode=‘rest’;tRef=rest;tLeft=rest;lastCd=-1;warned10=false;
 setCount++;
-const ex=$(‘t-ex’).value;
-if(reps>0&&ex){logs.push({date:todayStr(),time:nowTime(),exercise:ex,reps,set:setCount,repTime:rt,restTime:rest});saveLogs()}
+var ex=$(‘t-ex’).value;
+if(reps>0&&ex){logs.push({date:todayStr(),time:nowTime(),exercise:ex,reps:reps,set:setCount,repTime:rt,restTime:rest});saveLogs()}
 rRef=0;repCount=0;
 if(settings.snd)SFX.restStart();
 updateMainBtn();updateRing();
-iv=setInterval(()=>{
-tRef-=0.1;const sec=Math.ceil(tRef);
+iv=setInterval(function(){
+tRef-=0.1;var sec=Math.ceil(tRef);
 if(!warned10&&sec<=10&&sec>=1&&tRef>0){warned10=true;if(settings.snd)SFX.warn10()}
 if(sec<=5&&sec>=1&&sec!==lastCd&&tRef>0){lastCd=sec;if(settings.snd)SFX.countdown()}
 if(tRef<=0){stop();if(settings.snd)SFX.restEnd();startRep();return}
@@ -503,48 +411,44 @@ tLeft=Math.max(0,tRef);updateRing();
 },100);
 }
 
-$(‘t-main’).onclick=function(){try{initMediaAudio();ac()}catch(e){};if(mode===‘idle’){rRef=0;repCount=0;startRep()}else if(mode===‘rep’)startRest();else{stop();startRep()}};
-$(‘t-reset’).onclick=()=>{stop();releaseWakeLock();mode=‘idle’;tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
+$(‘t-main’).onclick=function(){try{ac()}catch(e){};if(mode===‘idle’){rRef=0;repCount=0;startRep()}else if(mode===‘rep’)startRest();else{stop();startRep()}};
+$(‘t-reset’).onclick=function(){stop();releaseWakeLock();mode=‘idle’;tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
 updateRing();
 
-// ══════════════════════════════
-//  REPORT
-// ══════════════════════════════
+// ═══ REPORT ═══
 function genReport(d){
-const dl=logs.filter(l=>l.date===d),db=bodyMetrics.filter(m=>m.date===d),dm=meals.filter(m=>m.date===d);
-const L=[`📅 ${d}`,‘─’.repeat(28)];
-if(db.length){const b=db[db.length-1];L.push(’\n🏋️ 体組成’);if(b.weight)L.push(`  体重: ${b.weight} kg`);if(b.bodyFat)L.push(`  体脂肪率: ${b.bodyFat} %`)}
-if(dm.length){L.push(’\n🍽️ 食事’);dm.forEach(m=>{const mt=MEAL_TYPES.find(t=>t.id===m.type);let l=`  ${mt?mt.icon:'🍽'} ${mt?mt.label:m.type}`;if(m.time)l+=` (${m.time})`;l+=`: ${m.content}`;if(m.calories)l+=` [${m.calories}kcal]`;L.push(l)});const tc=dm.reduce((s,m)=>s+(m.calories||0),0);if(tc>0)L.push(`  合計: ${tc} kcal`)}
-if(dl.length){const byEx={};dl.forEach(l=>{if(!byEx[l.exercise])byEx[l.exercise]=[];byEx[l.exercise].push(l)});L.push(’\n💪 トレーニング’);Object.entries(byEx).forEach(([ex,sets])=>{const tr=sets.reduce((s,x)=>s+x.reps,0);L.push(`\n  ▸ ${ex}`);sets.forEach(s=>L.push(`    Set${s.set}: ${s.reps}reps (${s.repTime}s/rep, rest ${s.restTime}s)`));L.push(`    → ${sets.length}sets / ${tr}reps`)});const gt=dl.reduce((s,l)=>s+l.reps,0);L.push(’\n’+‘─’.repeat(28));L.push(`📊 ${Object.keys(byEx).length}種目 / ${dl.length}sets / ${gt}reps`)}
+var dl=logs.filter(function(l){return l.date===d}),db=bodyMetrics.filter(function(m){return m.date===d}),dm=meals.filter(function(m){return m.date===d});
+var L=[‘📅 ‘+d,‘─’.repeat(28)];
+if(db.length){var b=db[db.length-1];L.push(’\n🏋️ 体組成’);if(b.weight)L.push(’  体重: ‘+b.weight+’ kg’);if(b.bodyFat)L.push(’  体脂肪率: ‘+b.bodyFat+’ %’)}
+if(dm.length){L.push(’\n🍽️ 食事’);dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l=’  ‘+(mt?mt.icon:‘🍽’)+’ ‘+(mt?mt.label:m.type);if(m.time)l+=’ (’+m.time+’)’;l+=’: ‘+m.content;if(m.calories)l+=’ [’+m.calories+‘kcal]’;L.push(l)});var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push(’  合計: ‘+tc+’ kcal’)}
+if(dl.length){var byEx={};dl.forEach(function(l){if(!byEx[l.exercise])byEx[l.exercise]=[];byEx[l.exercise].push(l)});L.push(’\n💪 トレーニング’);Object.keys(byEx).forEach(function(ex){var sets=byEx[ex];var tr=sets.reduce(function(s,x){return s+x.reps},0);L.push(’\n  ▸ ‘+ex);sets.forEach(function(s){L.push(’    Set’+s.set+’: ’+s.reps+‘reps (’+s.repTime+’s/rep, rest ‘+s.restTime+‘s)’)});L.push(’    → ’+sets.length+‘sets / ‘+tr+‘reps’)});var gt=dl.reduce(function(s,l){return s+l.reps},0);L.push(’\n’+‘─’.repeat(28));L.push(’📊 ’+Object.keys(byEx).length+‘種目 / ‘+dl.length+‘sets / ‘+gt+‘reps’)}
 if(!dl.length&&!db.length&&!dm.length)L.push(’\n記録なし’);
 return L.join(’\n’);
 }
 
-async function copyText(txt,btn){
-try{await navigator.clipboard.writeText(txt)}catch(e){const t=document.createElement(‘textarea’);t.value=txt;document.body.appendChild(t);t.select();document.execCommand(‘copy’);document.body.removeChild(t)}
-const orig=btn.textContent;btn.textContent=‘✓ コピーしました！’;btn.style.background=’#0d1a0d’;btn.style.color=‘var(–grn)’;btn.style.borderColor=’#34C75933’;
-setTimeout(()=>{btn.textContent=orig;btn.style.background=’#0d0d1a’;btn.style.color=‘var(–blu)’;btn.style.borderColor=’#6B8AFF33’},2000);
+function copyText(txt,btn){
+try{navigator.clipboard.writeText(txt)}catch(e){var t=document.createElement(‘textarea’);t.value=txt;document.body.appendChild(t);t.select();document.execCommand(‘copy’);document.body.removeChild(t)}
+var orig=btn.textContent;btn.textContent=‘✓ コピーしました！’;btn.style.background=’#0d1a0d’;btn.style.color=‘var(–grn)’;btn.style.borderColor=’#34C75933’;
+setTimeout(function(){btn.textContent=orig;btn.style.background=’#0d0d1a’;btn.style.color=‘var(–blu)’;btn.style.borderColor=’#6B8AFF33’},2000);
 }
 
-// ══════════════════════════════
-//  LOG VIEW
-// ══════════════════════════════
-$(‘log-copy’).onclick=()=>copyText(genReport(todayStr()),$(‘log-copy’));
+// ═══ LOG ═══
+$(‘log-copy’).onclick=function(){copyText(genReport(todayStr()),$(‘log-copy’))};
 $(‘log-filter’).onchange=renderLog;
 
 function renderLog(){
 $(‘log-report’).textContent=genReport(todayStr());
-const filt=$(‘log-filter’).value;
-const fl=filt===‘all’?logs:logs.filter(l=>l.exercise===filt);
-const grouped={};fl.forEach(l=>{if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l)});
-const dates=Object.keys(grouped).sort().reverse();
+var filt=$(‘log-filter’).value;
+var fl=filt===‘all’?logs:logs.filter(function(l){return l.exercise===filt});
+var grouped={};fl.forEach(function(l){if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l)});
+var dates=Object.keys(grouped).sort().reverse();
 if(!dates.length){$(‘log-list’).innerHTML=’<div style="color:var(--t4);text-align:center;padding:36px;font-size:13px">No records yet</div>’;return}
-let h=’’;
-dates.forEach(date=>{
-h+=`<div class="date-hdr"><span>${date}</span><button onclick="clearLogDay('${date}')">Clear day</button></div>`;
-grouped[date].forEach(entry=>{
-const idx=logs.indexOf(entry);
-h+=`<div class="card"> <div style="flex:1;cursor:pointer" onclick="openEditLog(${idx})"> <span style="color:var(--t2);font-size:13px;font-weight:600">${entry.exercise}</span> <span style="color:var(--t4);font-size:11px;margin-left:6px">Set${entry.set}</span> <div style="margin-top:2px"> <span class="mono" style="color:var(--red);font-weight:700;font-size:15px">${entry.reps}</span> <span style="color:var(--t4);font-size:10px"> reps</span> <span style="color:var(--t5);font-size:9px;margin-left:6px">${entry.repTime}s / ${entry.restTime}s</span> </div> </div> <div style="display:flex;gap:4px"> <button class="edit-btn" onclick="openEditLog(${idx})">✎</button> <button class="del" onclick="deleteLog(${idx})">✕</button> </div></div>`;
+var h=’’;
+dates.forEach(function(date){
+h+=’<div class="date-hdr"><span>’+date+’</span><button onclick="clearLogDay(\''+date+'\')">Clear day</button></div>’;
+grouped[date].forEach(function(entry){
+var idx=logs.indexOf(entry);
+h+=’<div class="card"><div style="flex:1;cursor:pointer" onclick="openEditLog('+idx+')"><span style="color:var(--t2);font-size:13px;font-weight:600">’+entry.exercise+’</span><span style="color:var(--t4);font-size:11px;margin-left:6px">Set’+entry.set+’</span><div style="margin-top:2px"><span class="mono" style="color:var(--red);font-weight:700;font-size:15px">’+entry.reps+’</span><span style="color:var(--t4);font-size:10px"> reps</span><span style="color:var(--t5);font-size:9px;margin-left:6px">’+entry.repTime+‘s / ‘+entry.restTime+‘s</span></div></div><div style="display:flex;gap:4px"><button class="edit-btn" onclick="openEditLog('+idx+')">✎</button><button class="del" onclick="deleteLog('+idx+')">✕</button></div></div>’;
 });
 h+=’<div style="height:12px"></div>’;
 });
@@ -552,51 +456,49 @@ $(‘log-list’).innerHTML=h;
 }
 
 window.openEditLog=openEditLog;
-window.deleteLog=idx=>{logs.splice(idx,1);saveLogs();renderLog()};
-window.clearLogDay=d=>{if(confirm(`${d}の記録を全て削除しますか？`)){logs=logs.filter(l=>l.date!==d);saveLogs();renderLog()}};
+window.deleteLog=function(idx){logs.splice(idx,1);saveLogs();renderLog()};
+window.clearLogDay=function(d){if(confirm(d+‘の記録を全て削除しますか？’)){logs=logs.filter(function(l){return l.date!==d});saveLogs();renderLog()}};
 
-// ══════════════════════════════
-//  MEAL VIEW
-// ══════════════════════════════
-let mealType=‘breakfast’;
-function renderMealTypes(){$(‘meal-types’).innerHTML=MEAL_TYPES.map(mt=>`<button class="${mt.id===mealType?'on':''}" onclick="setMealType('${mt.id}')">${mt.icon} ${mt.label}</button>`).join(’’)}
+// ═══ MEAL ═══
+var mealType=‘breakfast’;
+function renderMealTypes(){$(‘meal-types’).innerHTML=MEAL_TYPES.map(function(mt){return ‘<button class="'+(mt.id===mealType?'on':'')+'" onclick="setMealType(\''+mt.id+'\')">’+mt.icon+’ ‘+mt.label+’</button>’}).join(’’)}
 renderMealTypes();
-window.setMealType=id=>{mealType=id;renderMealTypes()};
+window.setMealType=function(id){mealType=id;renderMealTypes()};
 
-$(‘m-add’).onclick=()=>{
-const c=$(‘m-content’).value.trim();if(!c)return;
-const cal=$(‘m-cal’).value?parseInt($(‘m-cal’).value):null;
+$(‘m-add’).onclick=function(){
+var c=$(‘m-content’).value.trim();if(!c)return;
+var cal=$(‘m-cal’).value?parseInt($(‘m-cal’).value):null;
 meals.push({date:todayStr(),time:nowTime(),type:mealType,content:c,calories:cal});
 saveMeals();$(‘m-content’).value=’’;$(‘m-cal’).value=’’;renderMeals();
 };
 
-$(‘m-copy’).onclick=()=>{
-const dm=meals.filter(m=>m.date===todayStr());
+$(‘m-copy’).onclick=function(){
+var dm=meals.filter(function(m){return m.date===todayStr()});
 if(!dm.length){copyText(‘今日の食事記録なし’,$(‘m-copy’));return}
-const L=[`🍽️ ${todayStr()} 食事報告`];
-dm.forEach(m=>{const mt=MEAL_TYPES.find(t=>t.id===m.type);let l=`${mt?mt.icon:''} ${mt?mt.label:m.type}`;if(m.time)l+=` (${m.time})`;l+=`: ${m.content}`;if(m.calories)l+=` [${m.calories}kcal]`;L.push(l)});
-const tc=dm.reduce((s,m)=>s+(m.calories||0),0);if(tc>0)L.push(`\n合計: ${tc} kcal`);
+var L=[‘🍽️ ‘+todayStr()+’ 食事報告’];
+dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l=(mt?mt.icon:’’)+’ ‘+(mt?mt.label:m.type);if(m.time)l+=’ (’+m.time+’)’;l+=’: ‘+m.content;if(m.calories)l+=’ [’+m.calories+‘kcal]’;L.push(l)});
+var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push(’\n合計: ‘+tc+’ kcal’);
 copyText(L.join(’\n’),$(‘m-copy’));
 };
 
 function renderMeals(){
-const d=todayStr(),dm=meals.filter(m=>m.date===d),past=meals.filter(m=>m.date!==d);
-const pg={};past.forEach(m=>{if(!pg[m.date])pg[m.date]=[];pg[m.date].push(m)});
-const pDates=Object.keys(pg).sort().reverse().slice(0,7);
-const tc=dm.reduce((s,m)=>s+(m.calories||0),0);
-let h=’’;
+var d=todayStr(),dm=meals.filter(function(m){return m.date===d}),past=meals.filter(function(m){return m.date!==d});
+var pg={};past.forEach(function(m){if(!pg[m.date])pg[m.date]=[];pg[m.date].push(m)});
+var pDates=Object.keys(pg).sort().reverse().slice(0,7);
+var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);
+var h=’’;
 if(dm.length){
-h+=`<div class="date-hdr"><span>TODAY</span>${tc>0?`<span class="mono" style="color:var(--org);font-size:11px">${tc} kcal</span>`:''}</div>`;
-dm.forEach(m=>{
-const idx=meals.indexOf(m),mt=MEAL_TYPES.find(t=>t.id===m.type);
-h+=`<div class="card" style="align-items:flex-start"> <div style="flex:1;cursor:pointer" onclick="openEditMeal(${idx})"> <div><span style="font-size:13px">${mt?mt.icon:''}</span> <span style="color:var(--t3);font-size:12px;font-weight:600;margin-left:4px">${mt?mt.label:m.type}</span> <span style="color:var(--t5);font-size:10px;margin-left:6px">${m.time}</span></div> <div style="color:var(--t2);font-size:13px;margin-top:3px;line-height:1.4">${m.content}</div> ${m.calories?`<div class="mono" style="color:var(--org);font-size:11px;margin-top:2px">${m.calories} kcal</div>`:''} </div> <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0"> <button class="edit-btn" onclick="openEditMeal(${idx})">✎</button> <button class="del" onclick="deleteMeal(${idx})">✕</button> </div></div>`;
+h+=’<div class="date-hdr"><span>TODAY</span>’+(tc>0?’<span class="mono" style="color:var(--org);font-size:11px">’+tc+’ kcal</span>’:’’)+’</div>’;
+dm.forEach(function(m){
+var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});
+h+=’<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><div><span style="font-size:13px">’+(mt?mt.icon:’’)+’</span><span style="color:var(--t3);font-size:12px;font-weight:600;margin-left:4px">’+(mt?mt.label:m.type)+’</span><span style="color:var(--t5);font-size:10px;margin-left:6px">’+m.time+’</span></div><div style="color:var(--t2);font-size:13px;margin-top:3px;line-height:1.4">’+m.content+’</div>’+(m.calories?’<div class="mono" style="color:var(--org);font-size:11px;margin-top:2px">’+m.calories+’ kcal</div>’:’’)+’</div><div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>’;
 });
 }
-pDates.forEach(date=>{
-h+=`<div style="margin-top:14px"><div style="font-size:11px;color:var(--t4);font-weight:700;letter-spacing:2px;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin-bottom:5px">${date}</div>`;
-pg[date].forEach(m=>{
-const idx=meals.indexOf(m),mt=MEAL_TYPES.find(t=>t.id===m.type);
-h+=`<div class="card" style="align-items:flex-start"> <div style="flex:1;cursor:pointer" onclick="openEditMeal(${idx})"> <span style="font-size:12px">${mt?mt.icon:''}</span> <span style="color:var(--t3);font-size:11px;margin-left:4px">${mt?mt.label:m.type}</span> <span style="color:var(--t5);font-size:10px;margin-left:6px">${m.time||''}</span> <div style="color:var(--t3);font-size:12px;margin-top:2px">${m.content}${m.calories?` [${m.calories}kcal]`:''}</div> </div> <div style="display:flex;gap:4px;flex-shrink:0"> <button class="edit-btn" onclick="openEditMeal(${idx})">✎</button> <button class="del" onclick="deleteMeal(${idx})">✕</button> </div></div>`;
+pDates.forEach(function(date){
+h+=’<div style="margin-top:14px"><div style="font-size:11px;color:var(--t4);font-weight:700;letter-spacing:2px;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin-bottom:5px">’+date+’</div>’;
+pg[date].forEach(function(m){
+var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});
+h+=’<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><span style="font-size:12px">’+(mt?mt.icon:’’)+’</span><span style="color:var(--t3);font-size:11px;margin-left:4px">’+(mt?mt.label:m.type)+’</span><span style="color:var(--t5);font-size:10px;margin-left:6px">’+(m.time||’’)+’</span><div style="color:var(--t3);font-size:12px;margin-top:2px">’+m.content+(m.calories?’ [’+m.calories+‘kcal]’:’’)+’</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>’;
 });
 h+=’</div>’;
 });
@@ -604,362 +506,111 @@ $(‘meal-list’).innerHTML=h||’<div style="color:var(--t5);text-align:center
 }
 
 window.openEditMeal=openEditMeal;
-window.deleteMeal=idx=>{meals.splice(idx,1);saveMeals();renderMeals()};
+window.deleteMeal=function(idx){meals.splice(idx,1);saveMeals();renderMeals()};
 
-// ══════════════════════════════
-//  BODY VIEW
-// ══════════════════════════════
-let bodyChart=null;
+// ═══ BODY ═══
+var bodyChart=null;
 
-$(‘b-add’).onclick=()=>{
-const w=$(‘b-wt’).value,bf=$(‘b-bf’).value;if(!w&&!bf)return;
+$(‘b-add’).onclick=function(){
+var w=$(‘b-wt’).value,bf=$(‘b-bf’).value;if(!w&&!bf)return;
 bodyMetrics.push({date:todayStr(),time:nowTime(),weight:w?parseFloat(w):null,bodyFat:bf?parseFloat(bf):null});
 saveBody();$(‘b-wt’).value=’’;$(‘b-bf’).value=’’;renderBody();
 };
 
-$(‘b-copy’).onclick=()=>{
-const db=bodyMetrics.filter(m=>m.date===todayStr());
+$(‘b-copy’).onclick=function(){
+var db=bodyMetrics.filter(function(m){return m.date===todayStr()});
 if(!db.length){copyText(‘今日の体組成記録なし’,$(‘b-copy’));return}
-const b=db[db.length-1];let t=`🏋️ ${todayStr()} 体組成\n`;
-if(b.weight)t+=`体重: ${b.weight} kg\n`;if(b.bodyFat)t+=`体脂肪率: ${b.bodyFat} %`;
+var b=db[db.length-1];var t=‘🏋️ ‘+todayStr()+’ 体組成\n’;
+if(b.weight)t+=‘体重: ‘+b.weight+’ kg\n’;if(b.bodyFat)t+=‘体脂肪率: ‘+b.bodyFat+’ %’;
 copyText(t,$(‘b-copy’));
 };
 
 function renderBody(){
-const byDate={};bodyMetrics.forEach(m=>{byDate[m.date]=m});
-const cd=Object.values(byDate).sort((a,b)=>a.date.localeCompare(b.date));
+var byDate={};bodyMetrics.forEach(function(m){byDate[m.date]=m});
+var cd=Object.values(byDate).sort(function(a,b){return a.date.localeCompare(b.date)});
 if(cd.length>=2){
 $(‘chart-wrap’).style.display=’’;
 if(bodyChart)bodyChart.destroy();
 bodyChart=new Chart($(‘body-chart’),{
 type:‘line’,
-data:{labels:cd.map(m=>m.date.slice(5)),
+data:{labels:cd.map(function(m){return m.date.slice(5)}),
 datasets:[
-{label:‘Weight (kg)’,data:cd.map(m=>m.weight),borderColor:’#FF3B30’,backgroundColor:’#FF3B3022’,tension:.3,pointRadius:3,yAxisID:‘y’,spanGaps:true},
-{label:‘Body Fat (%)’,data:cd.map(m=>m.bodyFat),borderColor:’#34C759’,backgroundColor:’#34C75922’,tension:.3,pointRadius:3,yAxisID:‘y1’,spanGaps:true},
+{label:‘Weight (kg)’,data:cd.map(function(m){return m.weight}),borderColor:’#FF3B30’,backgroundColor:’#FF3B3022’,tension:.3,pointRadius:3,yAxisID:‘y’,spanGaps:true},
+{label:‘Body Fat (%)’,data:cd.map(function(m){return m.bodyFat}),borderColor:’#34C759’,backgroundColor:’#34C75922’,tension:.3,pointRadius:3,yAxisID:‘y1’,spanGaps:true}
 ]},
 options:{responsive:true,maintainAspectRatio:false,
 plugins:{legend:{labels:{color:’#888’,font:{size:10}}}},
 scales:{
 x:{ticks:{color:’#555’,font:{size:9}},grid:{color:’#1e1e1e’}},
 y:{position:‘left’,ticks:{color:’#FF3B30’,font:{size:9}},grid:{color:’#1e1e1e’}},
-y1:{position:‘right’,ticks:{color:’#34C759’,font:{size:9}},grid:{drawOnChartArea:false}},
+y1:{position:‘right’,ticks:{color:’#34C759’,font:{size:9}},grid:{drawOnChartArea:false}}
 }}
 });
-} else {$(‘chart-wrap’).style.display=‘none’}
+}else{$(‘chart-wrap’).style.display=‘none’}
 if(!bodyMetrics.length){$(‘body-list’).innerHTML=’<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">No records yet</div>’;return}
-let h=’’;
-[…bodyMetrics].reverse().forEach((m,i)=>{
-const idx=bodyMetrics.length-1-i;
-h+=`<div class="card"> <div style="color:var(--t3);font-size:11px">${m.date} ${m.time||''}</div> <div style="display:flex;align-items:center;gap:12px"> ${m.weight?`<span class="mono" style="color:var(--red);font-weight:700;font-size:13px">${m.weight}<span style="color:var(--t4);font-size:9px"> kg</span></span>`:''} ${m.bodyFat?`<span class="mono" style="color:var(--grn);font-weight:700;font-size:13px">${m.bodyFat}<span style="color:var(--t4);font-size:9px"> %</span></span>`:''} <button class="del" onclick="deleteBody(${idx})">✕</button> </div></div>`;
+var h=’’;
+var rev=bodyMetrics.slice().reverse();
+rev.forEach(function(m,i){
+var idx=bodyMetrics.length-1-i;
+h+=’<div class="card"><div style="color:var(--t3);font-size:11px">’+m.date+’ ‘+(m.time||’’)+’</div><div style="display:flex;align-items:center;gap:12px">’+(m.weight?’<span class="mono" style="color:var(--red);font-weight:700;font-size:13px">’+m.weight+’<span style="color:var(--t4);font-size:9px"> kg</span></span>’:’’)+(m.bodyFat?’<span class="mono" style="color:var(--grn);font-weight:700;font-size:13px">’+m.bodyFat+’<span style="color:var(--t4);font-size:9px"> %</span></span>’:’’)+’<button class="del" onclick="deleteBody('+idx+')">✕</button></div></div>’;
 });
 $(‘body-list’).innerHTML=h;
 }
 
-window.deleteBody=idx=>{bodyMetrics.splice(idx,1);saveBody();renderBody()};
+window.deleteBody=function(idx){bodyMetrics.splice(idx,1);saveBody();renderBody()};
 
-// ══════════════════════════════
-//  GOOGLE DRIVE AUTO-SYNC
-// ══════════════════════════════
-var DRIVE_API=‘https://www.googleapis.com/drive/v3/files’;
-var DRIVE_UPLOAD=‘https://www.googleapis.com/upload/drive/v3/files’;
-var SCOPE=‘https://www.googleapis.com/auth/drive.file’;
-var BACKUP_FILENAME=‘reptimer-backup.json’;
-
-var gClientId=LS.get(‘rt-gclient-id’,’’);
-var gToken=null;
-var gFileId=LS.get(‘rt-gdrive-fileid’,null);
-var syncTimer=null;
-var tokenClient=null;
-
+// ═══ DATA BACKUP ═══
 function getAllData(){
-return {
-_reptimer_backup:true,
-_version:3,
-_date:todayStr()+’ ’+nowTime(),
-exercises:exercises,
-logs:logs,
-bodyMetrics:bodyMetrics,
-meals:meals,
-settings:settings
-};
-}
-
-function applyData(data){
-if(data.exercises){exercises=data.exercises;LS.set(‘rt-exercises’,exercises)}
-if(data.logs){logs=data.logs;LS.set(‘rt-logs’,logs)}
-if(data.bodyMetrics){bodyMetrics=data.bodyMetrics;LS.set(‘rt-body’,bodyMetrics)}
-if(data.meals){meals=data.meals;LS.set(‘rt-meals’,meals)}
-if(data.settings){settings=data.settings;LS.set(‘rt-settings’,settings)}
-renderExSelect();
-}
-
-// ── Drive API helpers ──
-function driveHeaders(){
-return {‘Authorization’:’Bearer ’+gToken,‘Content-Type’:‘application/json’};
-}
-
-function findBackupFile(){
-return fetch(DRIVE_API+’?q=name%3D%27’+BACKUP_FILENAME+’%27+and+trashed%3Dfalse&fields=files(id,modifiedTime)&pageSize=1’,{
-headers:driveHeaders()
-}).then(function(r){return r.json()}).then(function(d){
-if(d.files&&d.files.length>0){
-gFileId=d.files[0].id;
-LS.set(‘rt-gdrive-fileid’,gFileId);
-return gFileId;
-}
-return null;
-});
-}
-
-function driveRead(){
-if(!gToken||!gFileId)return Promise.resolve(null);
-return fetch(DRIVE_API+’/’+gFileId+’?alt=media’,{
-headers:{‘Authorization’:’Bearer ’+gToken}
-}).then(function(r){
-if(!r.ok)throw new Error(‘read fail’);
-return r.json();
-});
-}
-
-function driveWrite(){
-if(!gToken)return Promise.resolve();
-var data=JSON.stringify(getAllData());
-
-if(gFileId){
-// Update existing file
-return fetch(DRIVE_UPLOAD+’/’+gFileId+’?uploadType=media’,{
-method:‘PATCH’,
-headers:{‘Authorization’:‘Bearer ‘+gToken,‘Content-Type’:‘application/json’},
-body:data
-}).then(function(r){
-if(r.ok){
-LS.set(‘rt-last-sync’,todayStr()+’ ‘+nowTime());
-updateSyncUI();
-}
-}).catch(function(){});
-} else {
-// Create new file (multipart)
-var metadata={name:BACKUP_FILENAME,mimeType:‘application/json’};
-var boundary=‘reptimer_boundary’;
-var body=’–’+boundary+’\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n’+
-JSON.stringify(metadata)+’\r\n–’+boundary+’\r\nContent-Type: application/json\r\n\r\n’+
-data+’\r\n–’+boundary+’–’;
-
-```
-return fetch(DRIVE_UPLOAD+'?uploadType=multipart',{
-  method:'POST',
-  headers:{
-    'Authorization':'Bearer '+gToken,
-    'Content-Type':'multipart/related; boundary='+boundary
-  },
-  body:body
-}).then(function(r){return r.json()}).then(function(d){
-  if(d.id){
-    gFileId=d.id;
-    LS.set('rt-gdrive-fileid',gFileId);
-    LS.set('rt-last-sync',todayStr()+' '+nowTime());
-    updateSyncUI();
-  }
-}).catch(function(){});
-```
-
-}
-}
-
-// Debounced save
-function scheduleCloudSave(){
-if(!gToken)return;
-if(syncTimer)clearTimeout(syncTimer);
-syncTimer=setTimeout(function(){driveWrite()},2000);
-}
-
-// ── Auth ──
-function initTokenClient(){
-if(!gClientId||!window.google)return;
-try{
-tokenClient=google.accounts.oauth2.initTokenClient({
-client_id:gClientId,
-scope:SCOPE,
-callback:function(resp){
-if(resp.access_token){
-gToken=resp.access_token;
-onSignedIn();
-}
-}
-});
-}catch(e){}
-}
-
-function doSignIn(){
-if(!tokenClient){initTokenClient()}
-if(tokenClient){tokenClient.requestAccessToken()}
-}
-
-function doSignOut(){
-if(gToken){
-try{google.accounts.oauth2.revoke(gToken)}catch(e){}
-}
-gToken=null;
-updateSyncUI();
-}
-
-function onSignedIn(){
-updateSyncUI();
-// Try to find existing backup and load it
-findBackupFile().then(function(id){
-if(id){
-return driveRead().then(function(data){
-if(data&&data._reptimer_backup){
-// If local data is empty but Drive has data, auto-restore
-if(logs.length===0&&data.logs&&data.logs.length>0){
-applyData(data);
-renderDataStats();
-$(‘d-sync-status’).textContent=‘✓ Driveからデータを復元しました’;
-} else {
-// Sync local to Drive
-driveWrite();
-}
-}
-});
-} else {
-// No backup exists, create one
-return driveWrite();
-}
-}).catch(function(){});
-}
-
-// ── UI state ──
-function updateSyncUI(){
-var hasClientId=!!gClientId;
-var signedIn=!!gToken;
-
-$(‘d-setup’).style.display=hasClientId?‘none’:’’;
-$(‘d-signin’).style.display=(hasClientId&&!signedIn)?’’:‘none’;
-$(‘d-connected’).style.display=(hasClientId&&signedIn)?’’:‘none’;
-
-if(signedIn){
-var lastSync=LS.get(‘rt-last-sync’,’’);
-$(‘d-sync-status’).textContent=lastSync?’最終同期: ’+lastSync:‘同期準備中…’;
-}
+return {_reptimer_backup:true,_version:3,_date:todayStr()+’ ’+nowTime(),exercises:exercises,logs:logs,bodyMetrics:bodyMetrics,meals:meals,settings:settings};
 }
 
 function renderDataStats(){
-var logDates={};
-logs.forEach(function(l){logDates[l.date]=true});
-var mealDates={};
-meals.forEach(function(m){mealDates[m.date]=true});
-$(‘d-stats’).innerHTML=
-‘🏋️ トレーニング: <b>’+logs.length+’</b> sets (’+Object.keys(logDates).length+’ days)<br>’+
-‘🍽️ 食事: <b>’+meals.length+’</b> 件 (’+Object.keys(mealDates).length+’ days)<br>’+
-‘📊 体組成: <b>’+bodyMetrics.length+’</b> 件<br>’+
-‘💪 種目: <b>’+exercises.length+’</b> 件’;
+var logDates={};logs.forEach(function(l){logDates[l.date]=true});
+var mealDates={};meals.forEach(function(m){mealDates[m.date]=true});
+$(‘d-stats’).innerHTML=‘🏋️ トレーニング: <b>’+logs.length+’</b> sets (’+Object.keys(logDates).length+’ days)<br>🍽️ 食事: <b>’+meals.length+’</b> 件 (’+Object.keys(mealDates).length+’ days)<br>📊 体組成: <b>’+bodyMetrics.length+’</b> 件<br>💪 種目: <b>’+exercises.length+’</b> 件’;
 }
 
-// Override save functions to trigger cloud sync
-(function(){
-var origEx=saveEx,origLogs=saveLogs,origBody=saveBody,origMeals=saveMeals;
-saveEx=function(){origEx();scheduleCloudSave()};
-saveLogs=function(){origLogs();scheduleCloudSave()};
-saveBody=function(){origBody();scheduleCloudSave()};
-saveMeals=function(){origMeals();scheduleCloudSave()};
-})();
-
-// ── Event handlers ──
-$(‘d-save-client-id’).onclick=function(){
-var id=$(‘d-client-id’).value.trim();
-if(!id){alert(‘Client IDを入力してください’);return}
-gClientId=id;
-LS.set(‘rt-gclient-id’,gClientId);
-try{initTokenClient()}catch(e){console.log(e)}
-updateSyncUI();
-alert(‘✓ Client IDを保存しました。次に「Googleアカウントでログイン」をタップしてください。’);
-};
-
-$(‘d-google-signin’).onclick=function(){doSignIn()};
-$(‘d-signout’).onclick=function(){doSignOut()};
-$(‘d-force-sync’).onclick=function(){
-if(gToken){
-$(‘d-sync-status’).textContent=‘同期中…’;
-driveWrite().then(function(){
-$(‘d-sync-status’).textContent=’✓ 同期完了 ’+nowTime();
-});
-}
-};
-
-// Manual file export
 $(‘d-export-file’).onclick=function(){
 var data=JSON.stringify(getAllData(),null,2);
 var blob=new Blob([data],{type:‘application/json’});
 var url=URL.createObjectURL(blob);
 var a=document.createElement(‘a’);
-a.href=url;
-a.download=‘reptimer-backup-’+todayStr()+’.json’;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
+a.href=url;a.download=‘reptimer-backup-’+todayStr()+’.json’;
+document.body.appendChild(a);a.click();document.body.removeChild(a);
 URL.revokeObjectURL(url);
-var btn=$(‘d-export-file’);
-btn.textContent=‘✓ ダウンロード完了！’;
-setTimeout(function(){btn.textContent=‘📥 JSONファイルをダウンロード’},2000);
 };
 
-// Manual file import
+$(‘d-export-clip’).onclick=function(){copyText(JSON.stringify(getAllData()),$(‘d-export-clip’))};
+
 $(‘d-import-file’).onclick=function(){$(‘d-file-input’).click()};
 $(‘d-file-input’).onchange=function(e){
-var file=e.target.files[0];
-if(!file)return;
+var file=e.target.files[0];if(!file)return;
 var reader=new FileReader();
 reader.onload=function(ev){
 try{
 var data=JSON.parse(ev.target.result);
 if(!data._reptimer_backup){alert(‘Rep Timerのバックアップデータではありません’);return}
 if(!confirm(‘ファイルからデータを復元しますか？\n現在のデータは上書きされます。’))return;
-applyData(data);
+if(data.exercises){exercises=data.exercises;saveEx()}
+if(data.logs){logs=data.logs;saveLogs()}
+if(data.bodyMetrics){bodyMetrics=data.bodyMetrics;saveBody()}
+if(data.meals){meals=data.meals;saveMeals()}
+if(data.settings){settings=data.settings;saveSets()}
+renderExSelect();renderDataStats();
 alert(‘✓ データを復元しました！’);
-renderDataStats();
-}catch(err){alert(‘ファイルの読み込みに失敗しました’)}
+}catch(e){alert(‘ファイルの読み込みに失敗しました’)}
 };
-reader.readAsText(file);
-e.target.value=’’;
+reader.readAsText(file);e.target.value=’’;
 };
 
-// Clear all data
 $(‘d-clear’).onclick=function(){
-if(!confirm(‘本当にすべてのデータを削除しますか？\nこの操作は取り消せません。’))return;
+if(!confirm(‘本当にすべてのデータを削除しますか？’))return;
 if(!confirm(‘最後の確認です。本当に削除しますか？’))return;
-exercises=[];logs=[];bodyMetrics=[];meals=[];
-settings={repTime:4,restTime:60,snd:true};
+exercises=[];logs=[];bodyMetrics=[];meals=[];settings={repTime:4,restTime:60,snd:true};
 saveEx();saveLogs();saveBody();saveMeals();saveSets();
 renderExSelect();renderDataStats();
 alert(‘全データを削除しました’);
 };
-
-// Init on load
-if(gClientId){
-$(‘d-client-id’).value=gClientId;
-}
-updateSyncUI();
-
-// Wait for GIS to load then init
-var gisCheck=setInterval(function(){
-if(window.google&&google.accounts){
-clearInterval(gisCheck);
-initTokenClient();
-}
-},500);
-
-// ── Clean up old service workers ──
-if(‘serviceWorker’ in navigator){
-navigator.serviceWorker.getRegistrations().then(function(regs){
-regs.forEach(function(r){r.unregister()});
-});
-if(‘caches’ in window){
-caches.keys().then(function(keys){
-keys.forEach(function(k){caches.delete(k)});
-});
-}
-}
 </script>
 
 </body>
