@@ -73,7 +73,7 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </head>
 <body>
 
-<div class="hdr"><h1>Rep Timer</h1><p>TRAINING COMPANION</p></div>
+<div class="hdr"><h1>Rep Timer</h1><p>TRAINING COMPANION v8</p></div>
 
 <div class="tabs" id="tabs">
   <button data-v="timer" class="on">Timer</button>
@@ -227,8 +227,16 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <script>
+// ── Error display (debug) ──
+window.onerror=function(msg,src,line,col,err){
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;background:red;color:white;padding:12px;font-size:11px;z-index:9999;word-break:break-all';
+  d.textContent='ERROR line '+line+': '+msg;
+  document.body.appendChild(d);
+};
+
 // ── Storage ──
-const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let exercises=LS.get('rt-exercises',[]);
 let logs=LS.get('rt-logs',[]);
 let bodyMetrics=LS.get('rt-body',[]);
@@ -312,10 +320,10 @@ var SFX={
 // ── Wake Lock (prevent auto-lock) ──
 let wakeLock=null;
 async function requestWakeLock(){
-  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen')}}catch{}
+  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen')}}catch(e){}
 }
 async function releaseWakeLock(){
-  try{if(wakeLock){await wakeLock.release();wakeLock=null}}catch{}
+  try{if(wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}
 }
 // Re-acquire wake lock when returning to app (iOS releases it on switch)
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode!=='idle')requestWakeLock()});
@@ -513,7 +521,7 @@ return L.join(’\n’);
 }
 
 async function copyText(txt,btn){
-try{await navigator.clipboard.writeText(txt)}catch{const t=document.createElement(‘textarea’);t.value=txt;document.body.appendChild(t);t.select();document.execCommand(‘copy’);document.body.removeChild(t)}
+try{await navigator.clipboard.writeText(txt)}catch(e){const t=document.createElement(‘textarea’);t.value=txt;document.body.appendChild(t);t.select();document.execCommand(‘copy’);document.body.removeChild(t)}
 const orig=btn.textContent;btn.textContent=‘✓ コピーしました！’;btn.style.background=’#0d1a0d’;btn.style.color=‘var(–grn)’;btn.style.borderColor=’#34C75933’;
 setTimeout(()=>{btn.textContent=orig;btn.style.background=’#0d0d1a’;btn.style.color=‘var(–blu)’;btn.style.borderColor=’#6B8AFF33’},2000);
 }
