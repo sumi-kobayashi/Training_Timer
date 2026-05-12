@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <title>Rep Timer</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{--bg:#0a0a0a;--c1:#111;--c2:#1e1e1e;--red:#FF3B30;--grn:#34C759;--org:#FF9500;--blu:#6B8AFF;--t1:#f0f0f0;--t2:#ccc;--t3:#888;--t4:#555;--t5:#333;--mono:'JetBrains Mono',ui-monospace,monospace}
@@ -69,14 +70,14 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </head>
 <body>
 
-<div class="hdr"><h1>Rep Timer</h1><p>TRAINING COMPANION v9</p></div>
+<div class="hdr"><h1>Rep Timer</h1><p>TRAINING COMPANION v10</p></div>
 
 <div class="tabs" id="tabs">
   <button data-v="timer" class="on">Timer</button>
   <button data-v="log">Log</button>
   <button data-v="meal">Meal</button>
   <button data-v="body">Body</button>
-  <button data-v="data">💾</button>
+  <button data-v="data">☁️</button>
 </div>
 
 <!-- TIMER -->
@@ -153,20 +154,46 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 <!-- DATA -->
 <div class="view" id="v-data">
   <div style="text-align:center;margin-bottom:14px">
-    <div style="font-size:36px;margin-bottom:4px">💾</div>
-    <div style="font-size:15px;font-weight:700;color:var(--t1)">Data Backup</div>
-    <div style="font-size:11px;color:var(--t4);margin-top:4px">手動バックアップでデータを守ってください</div>
+    <div style="font-size:36px;margin-bottom:4px">☁️</div>
+    <div style="font-size:15px;font-weight:700;color:var(--t1)">Google Drive Sync</div>
   </div>
-  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-    <button id="d-export-file" class="copy-btn" style="background:#0d1a0d;color:var(--grn);border-color:#34C75933">📥 JSONファイルをダウンロード</button>
-    <button id="d-export-clip" class="copy-btn" style="background:#0d0d1a;color:var(--blu);border-color:#6B8AFF33">📋 クリップボードにコピー</button>
+
+  <!-- Setup: enter Client ID -->
+  <div id="d-setup" style="margin-bottom:16px">
+    <div style="background:var(--c1);border-radius:10px;padding:14px">
+      <div style="font-size:12px;color:var(--t2);font-weight:700;margin-bottom:8px">初回セットアップ</div>
+      <div style="font-size:11px;color:var(--t4);margin-bottom:10px;line-height:1.6">Google Cloud ConsoleのClient IDを貼り付け</div>
+      <input id="d-client-id" class="inp inp-l mono" placeholder="xxxxx.apps.googleusercontent.com" style="font-size:10px;margin-bottom:8px">
+      <button id="d-save-cid" class="btn" style="width:100%">保存</button>
+    </div>
   </div>
-  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-    <label class="lbl">復元</label>
-    <button id="d-import-file" class="copy-btn" style="background:#1a1a0d;color:var(--org);border-color:#FF950033">📂 JSONファイルから復元</button>
-    <input type="file" id="d-file-input" accept=".json" style="display:none">
+
+  <!-- Sign in -->
+  <div id="d-signin" style="display:none;margin-bottom:16px">
+    <button id="d-do-signin" class="copy-btn" style="background:#1a2a1a;color:var(--grn);border-color:#34C75933;font-size:15px;padding:14px">🔑 Googleでログイン</button>
   </div>
+
+  <!-- Connected -->
+  <div id="d-connected" style="display:none;margin-bottom:16px">
+    <div style="background:#0d1a0d;border:1px solid #34C75933;border-radius:10px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="color:var(--grn);font-size:14px;font-weight:700">✓ 同期中</span>
+        <button id="d-signout" style="background:0;border:1px solid #FF3B3033;color:var(--red);border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer">Sign Out</button>
+      </div>
+      <div id="d-status" style="font-size:11px;color:var(--t4)"></div>
+      <button id="d-force" style="margin-top:8px;width:100%;padding:9px;background:var(--c1);color:var(--blu);border:1px solid #6B8AFF33;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🔄 今すぐ同期</button>
+    </div>
+  </div>
+
   <div class="sep"></div>
+  <details style="margin-bottom:14px">
+    <summary style="font-size:12px;color:var(--t4);cursor:pointer;padding:6px 0">📁 手動バックアップ</summary>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+      <button id="d-export-file" class="copy-btn" style="background:#0d1a0d;color:var(--grn);border-color:#34C75933;font-size:12px;padding:9px">📥 JSONダウンロード</button>
+      <button id="d-import-file" class="copy-btn" style="background:#1a1a0d;color:var(--org);border-color:#FF950033;font-size:12px;padding:9px">📂 JSONから復元</button>
+      <input type="file" id="d-file-input" accept=".json" style="display:none">
+    </div>
+  </details>
   <div style="margin-bottom:14px">
     <label class="lbl">データ状況</label>
     <div id="d-stats" style="background:var(--c1);border-radius:8px;padding:12px;font-size:12px;color:var(--t3);line-height:1.8"></div>
@@ -180,7 +207,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <script>
-// Error display
 window.onerror=function(msg,src,line){
   var d=document.createElement('div');
   d.style.cssText='position:fixed;top:0;left:0;right:0;background:red;color:white;padding:10px;font-size:11px;z-index:9999';
@@ -188,7 +214,6 @@ window.onerror=function(msg,src,line){
   document.body.appendChild(d);
 };
 
-// Storage
 var LS={
   get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
   set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -210,7 +235,6 @@ function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMont
 function nowTime(){return new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}
 function $(id){return document.getElementById(id)}
 
-// Audio
 var _ac=null;
 function ac(){
   if(!_ac||_ac.state==='closed')_ac=new(window.AudioContext||window.webkitAudioContext)();
@@ -219,82 +243,39 @@ function ac(){
 }
 function tone(f,d,v,t){
   v=v||0.8;t=t||'square';
-  try{
-    var c=ac(),o=c.createOscillator(),g=c.createGain();
-    o.frequency.value=f;o.type=t;
-    g.gain.setValueAtTime(v,c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d/1000);
-    o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+d/1000+0.05);
-  }catch(e){}
+  try{var c=ac(),o=c.createOscillator(),g=c.createGain();o.frequency.value=f;o.type=t;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d/1000);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+d/1000+0.05)}catch(e){}
 }
 var SFX={
-  repTick:function(){tone(1000,70,0.8,'sine')},
-  repDone:function(){tone(1320,90,1.0,'sine')},
+  repTick:function(){tone(1000,70,0.8,'sine')},repDone:function(){tone(1320,90,1.0,'sine')},
   setStart:function(){tone(523,110,0.8,'sine');setTimeout(function(){tone(659,110,0.8,'sine')},110);setTimeout(function(){tone(784,150,1.0,'sine')},220)},
   restStart:function(){tone(880,130,1.0,'square');setTimeout(function(){tone(660,160,0.9,'square')},160)},
   restEnd:function(){tone(880,90,1.0,'square');setTimeout(function(){tone(880,90,1.0,'square')},150);setTimeout(function(){tone(1100,180,1.0,'square')},300)},
-  countdown:function(){tone(880,80,0.8,'sine')},
-  warn10:function(){tone(600,230,0.9,'sine');setTimeout(function(){tone(800,230,0.9,'sine')},240)}
+  countdown:function(){tone(880,80,0.8,'sine')},warn10:function(){tone(600,230,0.9,'sine');setTimeout(function(){tone(800,230,0.9,'sine')},240)}
 };
 
-// Wake Lock
 var wakeLock=null;
 function requestWakeLock(){try{if('wakeLock' in navigator){navigator.wakeLock.request('screen').then(function(w){wakeLock=w}).catch(function(){})}}catch(e){}}
 function releaseWakeLock(){try{if(wakeLock){wakeLock.release();wakeLock=null}}catch(e){}}
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&mode!=='idle')requestWakeLock()});
 
-// Modal
 function closeModal(){$('modal-bg').classList.remove('on')}
 $('modal-bg').onclick=function(e){if(e.target===$('modal-bg'))closeModal()};
 
 function openEditLog(idx){
   var e=logs[idx];if(!e)return;
-  $('modal').innerHTML='<h3>トレーニング編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3>'+
-    '<div class="row"><div><label class="lbl">Exercise</label><input id="ed-ex" class="inp inp-l" value="'+e.exercise+'" style="font-size:13px"></div></div>'+
-    '<div class="row"><div><label class="lbl">Set #</label><input id="ed-set" type="number" class="inp mono" value="'+e.set+'" min="1"></div>'+
-    '<div><label class="lbl">Reps</label><input id="ed-reps" type="number" class="inp mono" value="'+e.reps+'" min="0"></div></div>'+
-    '<div class="row"><div><label class="lbl">Rep Time</label><input id="ed-rt" type="number" class="inp mono" value="'+e.repTime+'" step="0.5"></div>'+
-    '<div><label class="lbl">Rest Time</label><input id="ed-rest" type="number" class="inp mono" value="'+e.restTime+'"></div></div>'+
-    '<div class="row"><div><label class="lbl">Time</label><input id="ed-time" type="time" class="inp mono" value="'+(e.time||'')+'" style="font-size:13px"></div>'+
-    '<div><label class="lbl">Date</label><input id="ed-date" type="date" class="inp mono" value="'+e.date+'" style="font-size:13px"></div></div>'+
-    '<div class="actions"><button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>'+
-    '<button style="background:var(--red);color:#fff" onclick="saveEditLog('+idx+')">Save</button></div>';
+  $('modal').innerHTML='<h3>トレーニング編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3><div class="row"><div><label class="lbl">Exercise</label><input id="ed-ex" class="inp inp-l" value="'+e.exercise+'" style="font-size:13px"></div></div><div class="row"><div><label class="lbl">Set #</label><input id="ed-set" type="number" class="inp mono" value="'+e.set+'" min="1"></div><div><label class="lbl">Reps</label><input id="ed-reps" type="number" class="inp mono" value="'+e.reps+'" min="0"></div></div><div class="row"><div><label class="lbl">Rep Time</label><input id="ed-rt" type="number" class="inp mono" value="'+e.repTime+'" step="0.5"></div><div><label class="lbl">Rest Time</label><input id="ed-rest" type="number" class="inp mono" value="'+e.restTime+'"></div></div><div class="row"><div><label class="lbl">Time</label><input id="ed-time" type="time" class="inp mono" value="'+(e.time||'')+'" style="font-size:13px"></div><div><label class="lbl">Date</label><input id="ed-date" type="date" class="inp mono" value="'+e.date+'" style="font-size:13px"></div></div><div class="actions"><button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button><button style="background:var(--red);color:#fff" onclick="saveEditLog('+idx+')">Save</button></div>';
   $('modal-bg').classList.add('on');
 }
-window.saveEditLog=function(idx){
-  logs[idx].exercise=$('ed-ex').value.trim()||logs[idx].exercise;
-  logs[idx].set=parseInt($('ed-set').value)||logs[idx].set;
-  logs[idx].reps=parseInt($('ed-reps').value)||0;
-  logs[idx].repTime=parseFloat($('ed-rt').value)||logs[idx].repTime;
-  logs[idx].restTime=parseInt($('ed-rest').value)||logs[idx].restTime;
-  logs[idx].time=$('ed-time').value||logs[idx].time;
-  logs[idx].date=$('ed-date').value||logs[idx].date;
-  saveLogs();closeModal();renderLog();
-};
+window.saveEditLog=function(idx){logs[idx].exercise=$('ed-ex').value.trim()||logs[idx].exercise;logs[idx].set=parseInt($('ed-set').value)||logs[idx].set;logs[idx].reps=parseInt($('ed-reps').value)||0;logs[idx].repTime=parseFloat($('ed-rt').value)||logs[idx].repTime;logs[idx].restTime=parseInt($('ed-rest').value)||logs[idx].restTime;logs[idx].time=$('ed-time').value||logs[idx].time;logs[idx].date=$('ed-date').value||logs[idx].date;saveLogs();closeModal();renderLog()};
 
 function openEditMeal(idx){
   var m=meals[idx];if(!m)return;
   var opts=MEAL_TYPES.map(function(t){return '<option value="'+t.id+'"'+(t.id===m.type?' selected':'')+'>'+t.icon+' '+t.label+'</option>'}).join('');
-  $('modal').innerHTML='<h3>食事編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3>'+
-    '<div class="row"><div><label class="lbl">Type</label><select id="ed-mtype" class="inp inp-l" style="font-size:13px">'+opts+'</select></div></div>'+
-    '<div class="row"><div><label class="lbl">Content</label><textarea id="ed-mcont" class="inp" rows="2" style="font-size:13px;text-align:left">'+m.content+'</textarea></div></div>'+
-    '<div class="row"><div><label class="lbl">kcal</label><input id="ed-mcal" type="number" class="inp mono" value="'+(m.calories||'')+'" placeholder="任意"></div>'+
-    '<div><label class="lbl">Time</label><input id="ed-mtime" type="time" class="inp mono" value="'+(m.time||'')+'" style="font-size:13px"></div></div>'+
-    '<div class="row"><div><label class="lbl">Date</label><input id="ed-mdate" type="date" class="inp mono" value="'+m.date+'" style="font-size:13px"></div><div></div></div>'+
-    '<div class="actions"><button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>'+
-    '<button style="background:var(--red);color:#fff" onclick="saveEditMeal('+idx+')">Save</button></div>';
+  $('modal').innerHTML='<h3>食事編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3><div class="row"><div><label class="lbl">Type</label><select id="ed-mtype" class="inp inp-l" style="font-size:13px">'+opts+'</select></div></div><div class="row"><div><label class="lbl">Content</label><textarea id="ed-mcont" class="inp" rows="2" style="font-size:13px;text-align:left">'+m.content+'</textarea></div></div><div class="row"><div><label class="lbl">kcal</label><input id="ed-mcal" type="number" class="inp mono" value="'+(m.calories||'')+'" placeholder="任意"></div><div><label class="lbl">Time</label><input id="ed-mtime" type="time" class="inp mono" value="'+(m.time||'')+'" style="font-size:13px"></div></div><div class="row"><div><label class="lbl">Date</label><input id="ed-mdate" type="date" class="inp mono" value="'+m.date+'" style="font-size:13px"></div><div></div></div><div class="actions"><button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button><button style="background:var(--red);color:#fff" onclick="saveEditMeal('+idx+')">Save</button></div>';
   $('modal-bg').classList.add('on');
 }
-window.saveEditMeal=function(idx){
-  meals[idx].type=$('ed-mtype').value;
-  meals[idx].content=$('ed-mcont').value.trim()||meals[idx].content;
-  meals[idx].calories=$('ed-mcal').value?parseInt($('ed-mcal').value):null;
-  meals[idx].time=$('ed-mtime').value||meals[idx].time;
-  meals[idx].date=$('ed-mdate').value||meals[idx].date;
-  saveMeals();closeModal();renderMeals();
-};
+window.saveEditMeal=function(idx){meals[idx].type=$('ed-mtype').value;meals[idx].content=$('ed-mcont').value.trim()||meals[idx].content;meals[idx].calories=$('ed-mcal').value?parseInt($('ed-mcal').value):null;meals[idx].time=$('ed-mtime').value||meals[idx].time;meals[idx].date=$('ed-mdate').value||meals[idx].date;saveMeals();closeModal();renderMeals()};
 
-// Tabs
 var views=['timer','log','meal','body','data'];
 document.querySelectorAll('#tabs button').forEach(function(b){
   b.onclick=function(){
@@ -305,24 +286,16 @@ document.querySelectorAll('#tabs button').forEach(function(b){
   };
 });
 
-var MEAL_TYPES=[
-  {id:'breakfast',label:'朝食',icon:'🍳'},{id:'lunch',label:'昼食',icon:'🍛'},
-  {id:'dinner',label:'夕食',icon:'🍖'},{id:'snack',label:'間食',icon:'🍪'},
-  {id:'supplement',label:'サプリ',icon:'💊'}
-];
+var MEAL_TYPES=[{id:'breakfast',label:'朝食',icon:'🍳'},{id:'lunch',label:'昼食',icon:'🍛'},{id:'dinner',label:'夕食',icon:'🍖'},{id:'snack',label:'間食',icon:'🍪'},{id:'supplement',label:'サプリ',icon:'💊'}];
 
-// ═══ TIMER ═══
 var CIRC=2*Math.PI*118;
 var mode='idle',tLeft=0,repCount=0,setCount=0,totalReps=0;
 var iv=null,tRef=0,rRef=0,lastCd=-1,lastSec=-1,warned10=false;
+$('t-rep').value=settings.repTime;$('t-rest').value=settings.restTime;
 
-$('t-rep').value=settings.repTime;
-$('t-rest').value=settings.restTime;
-
-function updateSndBtn(){var b=$('t-snd');b.textContent=settings.snd?'🔊 ON':'🔇 OFF';b.style.background=settings.snd?'#0d1a0d':'#1a0d0d';b.style.color=settings.snd?'var(--grn)':'var(--red)';b.style.borderColor=settings.snd?'#34C75933':'#FF3B3033'}
+function updateSndBtn(){var b=$('t-snd');b.textContent=settings.snd?'🔊 ON':'🔇 OFF';b.style.background=settings.snd?'#0d1a0d':'#1a0d0d';b.style.color=settings.snd?'#34C759':'#FF3B30';b.style.borderColor=settings.snd?'#34C75933':'#FF3B3033'}
 updateSndBtn();
 $('t-snd').onclick=function(){settings.snd=!settings.snd;saveSets();updateSndBtn()};
-
 function getRepTime(){return parseFloat($('t-rep').value)||4}
 function getRestTime(){return parseInt($('t-rest').value)||60}
 $('t-rep').oninput=function(){settings.repTime=getRepTime();saveSets()};
@@ -347,7 +320,7 @@ $('t-delex').onclick=function(){var v=$('t-ex').value;exercises=exercises.filter
 function updateRing(){
   var rt=getRepTime(),rest=getRestTime(),prog=0;
   if(mode==='rep')prog=(rt-tLeft)/rt;else if(mode==='rest')prog=(rest-tLeft)/rest;
-  var col=mode==='rep'?'var(--red)':mode==='rest'?'var(--grn)':'#444';
+  var col=mode==='rep'?'#FF3B30':mode==='rest'?'#34C759':'#444';
   $('ring-arc').setAttribute('stroke',col);$('ring-arc').setAttribute('stroke-dashoffset',CIRC*(1-prog));
   $('ring-label').textContent=mode==='idle'?'Ready':mode==='rep'?'Rep':'Rest';
   $('ring-label').style.color=col;
@@ -360,246 +333,176 @@ function updateRing(){
 
 function updateMainBtn(){
   var b=$('t-main');
-  if(mode==='idle'){b.textContent='▶ START';b.style.background='var(--red)'}
-  else if(mode==='rep'){b.textContent='⏸ REST';b.style.background='var(--grn)'}
-  else{b.textContent='⏩ SKIP';b.style.background='var(--org)'}
+  if(mode==='idle'){b.textContent='▶ START';b.style.background='#FF3B30'}
+  else if(mode==='rep'){b.textContent='⏸ REST';b.style.background='#34C759'}
+  else{b.textContent='⏩ SKIP';b.style.background='#FF9500'}
   $('t-reset').style.display=mode==='idle'?'none':'';
 }
 
 function stop(){if(iv){clearInterval(iv);iv=null}}
-
 function startRep(){
   stop();requestWakeLock();var rt=getRepTime();
   mode='rep';tRef=rt;tLeft=rt;lastSec=-1;lastCd=-1;
-  if(settings.snd)SFX.setStart();
-  updateMainBtn();updateRing();
-  iv=setInterval(function(){
-    tRef-=0.1;
-    var sec=Math.floor(tRef);
-    if(sec!==lastSec&&sec>=0&&tRef>0.05){lastSec=sec;if(settings.snd)SFX.repTick()}
-    if(tRef<=0){rRef++;repCount=rRef;totalReps++;if(settings.snd)SFX.repDone();tRef=rt;lastSec=-1}
-    tLeft=Math.max(0,tRef);updateRing();
-  },100);
+  if(settings.snd)SFX.setStart();updateMainBtn();updateRing();
+  iv=setInterval(function(){tRef-=0.1;var sec=Math.floor(tRef);if(sec!==lastSec&&sec>=0&&tRef>0.05){lastSec=sec;if(settings.snd)SFX.repTick()}if(tRef<=0){rRef++;repCount=rRef;totalReps++;if(settings.snd)SFX.repDone();tRef=rt;lastSec=-1}tLeft=Math.max(0,tRef);updateRing()},100);
 }
-
 function startRest(){
   stop();var reps=rRef,rt=getRepTime(),rest=getRestTime();
-  mode='rest';tRef=rest;tLeft=rest;lastCd=-1;warned10=false;
-  setCount++;
+  mode='rest';tRef=rest;tLeft=rest;lastCd=-1;warned10=false;setCount++;
   var ex=$('t-ex').value;
   if(reps>0&&ex){logs.push({date:todayStr(),time:nowTime(),exercise:ex,reps:reps,set:setCount,repTime:rt,restTime:rest});saveLogs()}
-  rRef=0;repCount=0;
-  if(settings.snd)SFX.restStart();
-  updateMainBtn();updateRing();
-  iv=setInterval(function(){
-    tRef-=0.1;var sec=Math.ceil(tRef);
-    if(!warned10&&sec<=10&&sec>=1&&tRef>0){warned10=true;if(settings.snd)SFX.warn10()}
-    if(sec<=5&&sec>=1&&sec!==lastCd&&tRef>0){lastCd=sec;if(settings.snd)SFX.countdown()}
-    if(tRef<=0){stop();if(settings.snd)SFX.restEnd();startRep();return}
-    tLeft=Math.max(0,tRef);updateRing();
-  },100);
+  rRef=0;repCount=0;if(settings.snd)SFX.restStart();updateMainBtn();updateRing();
+  iv=setInterval(function(){tRef-=0.1;var sec=Math.ceil(tRef);if(!warned10&&sec<=10&&sec>=1&&tRef>0){warned10=true;if(settings.snd)SFX.warn10()}if(sec<=5&&sec>=1&&sec!==lastCd&&tRef>0){lastCd=sec;if(settings.snd)SFX.countdown()}if(tRef<=0){stop();if(settings.snd)SFX.restEnd();startRep();return}tLeft=Math.max(0,tRef);updateRing()},100);
 }
-
 $('t-main').onclick=function(){try{ac()}catch(e){};if(mode==='idle'){rRef=0;repCount=0;startRep()}else if(mode==='rep')startRest();else{stop();startRep()}};
 $('t-reset').onclick=function(){stop();releaseWakeLock();mode='idle';tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
 updateRing();
 
-// ═══ REPORT ═══
 function genReport(d){
   var dl=logs.filter(function(l){return l.date===d}),db=bodyMetrics.filter(function(m){return m.date===d}),dm=meals.filter(function(m){return m.date===d});
   var L=['📅 '+d,'─'.repeat(28)];
   if(db.length){var b=db[db.length-1];L.push('\n🏋️ 体組成');if(b.weight)L.push('  体重: '+b.weight+' kg');if(b.bodyFat)L.push('  体脂肪率: '+b.bodyFat+' %')}
   if(dm.length){L.push('\n🍽️ 食事');dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l='  '+(mt?mt.icon:'🍽')+' '+(mt?mt.label:m.type);if(m.time)l+=' ('+m.time+')';l+=': '+m.content;if(m.calories)l+=' ['+m.calories+'kcal]';L.push(l)});var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push('  合計: '+tc+' kcal')}
   if(dl.length){var byEx={};dl.forEach(function(l){if(!byEx[l.exercise])byEx[l.exercise]=[];byEx[l.exercise].push(l)});L.push('\n💪 トレーニング');Object.keys(byEx).forEach(function(ex){var sets=byEx[ex];var tr=sets.reduce(function(s,x){return s+x.reps},0);L.push('\n  ▸ '+ex);sets.forEach(function(s){L.push('    Set'+s.set+': '+s.reps+'reps ('+s.repTime+'s/rep, rest '+s.restTime+'s)')});L.push('    → '+sets.length+'sets / '+tr+'reps')});var gt=dl.reduce(function(s,l){return s+l.reps},0);L.push('\n'+'─'.repeat(28));L.push('📊 '+Object.keys(byEx).length+'種目 / '+dl.length+'sets / '+gt+'reps')}
-  if(!dl.length&&!db.length&&!dm.length)L.push('\n記録なし');
-  return L.join('\n');
+  if(!dl.length&&!db.length&&!dm.length)L.push('\n記録なし');return L.join('\n');
 }
-
 function copyText(txt,btn){
   try{navigator.clipboard.writeText(txt)}catch(e){var t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t)}
-  var orig=btn.textContent;btn.textContent='✓ コピーしました！';btn.style.background='#0d1a0d';btn.style.color='var(--grn)';btn.style.borderColor='#34C75933';
-  setTimeout(function(){btn.textContent=orig;btn.style.background='#0d0d1a';btn.style.color='var(--blu)';btn.style.borderColor='#6B8AFF33'},2000);
+  var orig=btn.textContent;btn.textContent='✓ コピーしました！';btn.style.background='#0d1a0d';btn.style.color='#34C759';btn.style.borderColor='#34C75933';
+  setTimeout(function(){btn.textContent=orig;btn.style.background='#0d0d1a';btn.style.color='#6B8AFF';btn.style.borderColor='#6B8AFF33'},2000);
 }
 
-// ═══ LOG ═══
 $('log-copy').onclick=function(){copyText(genReport(todayStr()),$('log-copy'))};
 $('log-filter').onchange=renderLog;
-
 function renderLog(){
-  $('log-report').textContent=genReport(todayStr());
-  var filt=$('log-filter').value;
-  var fl=filt==='all'?logs:logs.filter(function(l){return l.exercise===filt});
-  var grouped={};fl.forEach(function(l){if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l)});
-  var dates=Object.keys(grouped).sort().reverse();
-  if(!dates.length){$('log-list').innerHTML='<div style="color:var(--t4);text-align:center;padding:36px;font-size:13px">No records yet</div>';return}
-  var h='';
-  dates.forEach(function(date){
-    h+='<div class="date-hdr"><span>'+date+'</span><button onclick="clearLogDay(\''+date+'\')">Clear day</button></div>';
-    grouped[date].forEach(function(entry){
-      var idx=logs.indexOf(entry);
-      h+='<div class="card"><div style="flex:1;cursor:pointer" onclick="openEditLog('+idx+')"><span style="color:var(--t2);font-size:13px;font-weight:600">'+entry.exercise+'</span><span style="color:var(--t4);font-size:11px;margin-left:6px">Set'+entry.set+'</span><div style="margin-top:2px"><span class="mono" style="color:var(--red);font-weight:700;font-size:15px">'+entry.reps+'</span><span style="color:var(--t4);font-size:10px"> reps</span><span style="color:var(--t5);font-size:9px;margin-left:6px">'+entry.repTime+'s / '+entry.restTime+'s</span></div></div><div style="display:flex;gap:4px"><button class="edit-btn" onclick="openEditLog('+idx+')">✎</button><button class="del" onclick="deleteLog('+idx+')">✕</button></div></div>';
-    });
-    h+='<div style="height:12px"></div>';
-  });
+  $('log-report').textContent=genReport(todayStr());var filt=$('log-filter').value;
+  var fl=filt==='all'?logs:logs.filter(function(l){return l.exercise===filt});var grouped={};fl.forEach(function(l){if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l)});var dates=Object.keys(grouped).sort().reverse();
+  if(!dates.length){$('log-list').innerHTML='<div style="color:#555;text-align:center;padding:36px;font-size:13px">No records yet</div>';return}
+  var h='';dates.forEach(function(date){h+='<div class="date-hdr"><span>'+date+'</span><button onclick="clearLogDay(\''+date+'\')">Clear day</button></div>';grouped[date].forEach(function(entry){var idx=logs.indexOf(entry);h+='<div class="card"><div style="flex:1;cursor:pointer" onclick="openEditLog('+idx+')"><span style="color:#ccc;font-size:13px;font-weight:600">'+entry.exercise+'</span><span style="color:#555;font-size:11px;margin-left:6px">Set'+entry.set+'</span><div style="margin-top:2px"><span class="mono" style="color:#FF3B30;font-weight:700;font-size:15px">'+entry.reps+'</span><span style="color:#555;font-size:10px"> reps</span><span style="color:#333;font-size:9px;margin-left:6px">'+entry.repTime+'s / '+entry.restTime+'s</span></div></div><div style="display:flex;gap:4px"><button class="edit-btn" onclick="openEditLog('+idx+')">✎</button><button class="del" onclick="deleteLog('+idx+')">✕</button></div></div>'});h+='<div style="height:12px"></div>'});
   $('log-list').innerHTML=h;
 }
+window.openEditLog=openEditLog;window.deleteLog=function(idx){logs.splice(idx,1);saveLogs();renderLog()};window.clearLogDay=function(d){if(confirm(d+'の記録を全て削除しますか？')){logs=logs.filter(function(l){return l.date!==d});saveLogs();renderLog()}};
 
-window.openEditLog=openEditLog;
-window.deleteLog=function(idx){logs.splice(idx,1);saveLogs();renderLog()};
-window.clearLogDay=function(d){if(confirm(d+'の記録を全て削除しますか？')){logs=logs.filter(function(l){return l.date!==d});saveLogs();renderLog()}};
-
-// ═══ MEAL ═══
 var mealType='breakfast';
 function renderMealTypes(){$('meal-types').innerHTML=MEAL_TYPES.map(function(mt){return '<button class="'+(mt.id===mealType?'on':'')+'" onclick="setMealType(\''+mt.id+'\')">'+mt.icon+' '+mt.label+'</button>'}).join('')}
-renderMealTypes();
-window.setMealType=function(id){mealType=id;renderMealTypes()};
+renderMealTypes();window.setMealType=function(id){mealType=id;renderMealTypes()};
+$('m-add').onclick=function(){var c=$('m-content').value.trim();if(!c)return;var cal=$('m-cal').value?parseInt($('m-cal').value):null;meals.push({date:todayStr(),time:nowTime(),type:mealType,content:c,calories:cal});saveMeals();$('m-content').value='';$('m-cal').value='';renderMeals()};
+$('m-copy').onclick=function(){var dm=meals.filter(function(m){return m.date===todayStr()});if(!dm.length){copyText('今日の食事記録なし',$('m-copy'));return}var L=['🍽️ '+todayStr()+' 食事報告'];dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l=(mt?mt.icon:'')+' '+(mt?mt.label:m.type);if(m.time)l+=' ('+m.time+')';l+=': '+m.content;if(m.calories)l+=' ['+m.calories+'kcal]';L.push(l)});var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push('\n合計: '+tc+' kcal');copyText(L.join('\n'),$('m-copy'))};
+function renderMeals(){var d=todayStr(),dm=meals.filter(function(m){return m.date===d}),past=meals.filter(function(m){return m.date!==d});var pg={};past.forEach(function(m){if(!pg[m.date])pg[m.date]=[];pg[m.date].push(m)});var pDates=Object.keys(pg).sort().reverse().slice(0,7);var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);var h='';if(dm.length){h+='<div class="date-hdr"><span>TODAY</span>'+(tc>0?'<span class="mono" style="color:#FF9500;font-size:11px">'+tc+' kcal</span>':'')+'</div>';dm.forEach(function(m){var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});h+='<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><div><span style="font-size:13px">'+(mt?mt.icon:'')+'</span><span style="color:#888;font-size:12px;font-weight:600;margin-left:4px">'+(mt?mt.label:m.type)+'</span><span style="color:#555;font-size:10px;margin-left:6px">'+m.time+'</span></div><div style="color:#ccc;font-size:13px;margin-top:3px;line-height:1.4">'+m.content+'</div>'+(m.calories?'<div class="mono" style="color:#FF9500;font-size:11px;margin-top:2px">'+m.calories+' kcal</div>':'')+'</div><div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>'})}pDates.forEach(function(date){h+='<div style="margin-top:14px"><div style="font-size:11px;color:#555;font-weight:700;letter-spacing:2px;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin-bottom:5px">'+date+'</div>';pg[date].forEach(function(m){var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});h+='<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><span style="font-size:12px">'+(mt?mt.icon:'')+'</span><span style="color:#888;font-size:11px;margin-left:4px">'+(mt?mt.label:m.type)+'</span><span style="color:#555;font-size:10px;margin-left:6px">'+(m.time||'')+'</span><div style="color:#888;font-size:12px;margin-top:2px">'+m.content+(m.calories?' ['+m.calories+'kcal]':'')+'</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>'});h+='</div>'});$('meal-list').innerHTML=h||'<div style="color:#555;text-align:center;padding:28px;font-size:13px">記録なし</div>'}
+window.openEditMeal=openEditMeal;window.deleteMeal=function(idx){meals.splice(idx,1);saveMeals();renderMeals()};
 
-$('m-add').onclick=function(){
-  var c=$('m-content').value.trim();if(!c)return;
-  var cal=$('m-cal').value?parseInt($('m-cal').value):null;
-  meals.push({date:todayStr(),time:nowTime(),type:mealType,content:c,calories:cal});
-  saveMeals();$('m-content').value='';$('m-cal').value='';renderMeals();
-};
-
-$('m-copy').onclick=function(){
-  var dm=meals.filter(function(m){return m.date===todayStr()});
-  if(!dm.length){copyText('今日の食事記録なし',$('m-copy'));return}
-  var L=['🍽️ '+todayStr()+' 食事報告'];
-  dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l=(mt?mt.icon:'')+' '+(mt?mt.label:m.type);if(m.time)l+=' ('+m.time+')';l+=': '+m.content;if(m.calories)l+=' ['+m.calories+'kcal]';L.push(l)});
-  var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push('\n合計: '+tc+' kcal');
-  copyText(L.join('\n'),$('m-copy'));
-};
-
-function renderMeals(){
-  var d=todayStr(),dm=meals.filter(function(m){return m.date===d}),past=meals.filter(function(m){return m.date!==d});
-  var pg={};past.forEach(function(m){if(!pg[m.date])pg[m.date]=[];pg[m.date].push(m)});
-  var pDates=Object.keys(pg).sort().reverse().slice(0,7);
-  var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);
-  var h='';
-  if(dm.length){
-    h+='<div class="date-hdr"><span>TODAY</span>'+(tc>0?'<span class="mono" style="color:var(--org);font-size:11px">'+tc+' kcal</span>':'')+'</div>';
-    dm.forEach(function(m){
-      var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});
-      h+='<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><div><span style="font-size:13px">'+(mt?mt.icon:'')+'</span><span style="color:var(--t3);font-size:12px;font-weight:600;margin-left:4px">'+(mt?mt.label:m.type)+'</span><span style="color:var(--t5);font-size:10px;margin-left:6px">'+m.time+'</span></div><div style="color:var(--t2);font-size:13px;margin-top:3px;line-height:1.4">'+m.content+'</div>'+(m.calories?'<div class="mono" style="color:var(--org);font-size:11px;margin-top:2px">'+m.calories+' kcal</div>':'')+'</div><div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>';
-    });
-  }
-  pDates.forEach(function(date){
-    h+='<div style="margin-top:14px"><div style="font-size:11px;color:var(--t4);font-weight:700;letter-spacing:2px;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin-bottom:5px">'+date+'</div>';
-    pg[date].forEach(function(m){
-      var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});
-      h+='<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><span style="font-size:12px">'+(mt?mt.icon:'')+'</span><span style="color:var(--t3);font-size:11px;margin-left:4px">'+(mt?mt.label:m.type)+'</span><span style="color:var(--t5);font-size:10px;margin-left:6px">'+(m.time||'')+'</span><div style="color:var(--t3);font-size:12px;margin-top:2px">'+m.content+(m.calories?' ['+m.calories+'kcal]':'')+'</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>';
-    });
-    h+='</div>';
-  });
-  $('meal-list').innerHTML=h||'<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">記録なし</div>';
-}
-
-window.openEditMeal=openEditMeal;
-window.deleteMeal=function(idx){meals.splice(idx,1);saveMeals();renderMeals()};
-
-// ═══ BODY ═══
 var bodyChart=null;
-
-$('b-add').onclick=function(){
-  var w=$('b-wt').value,bf=$('b-bf').value;if(!w&&!bf)return;
-  bodyMetrics.push({date:todayStr(),time:nowTime(),weight:w?parseFloat(w):null,bodyFat:bf?parseFloat(bf):null});
-  saveBody();$('b-wt').value='';$('b-bf').value='';renderBody();
-};
-
-$('b-copy').onclick=function(){
-  var db=bodyMetrics.filter(function(m){return m.date===todayStr()});
-  if(!db.length){copyText('今日の体組成記録なし',$('b-copy'));return}
-  var b=db[db.length-1];var t='🏋️ '+todayStr()+' 体組成\n';
-  if(b.weight)t+='体重: '+b.weight+' kg\n';if(b.bodyFat)t+='体脂肪率: '+b.bodyFat+' %';
-  copyText(t,$('b-copy'));
-};
-
-function renderBody(){
-  var byDate={};bodyMetrics.forEach(function(m){byDate[m.date]=m});
-  var cd=Object.values(byDate).sort(function(a,b){return a.date.localeCompare(b.date)});
-  if(cd.length>=2){
-    $('chart-wrap').style.display='';
-    if(bodyChart)bodyChart.destroy();
-    bodyChart=new Chart($('body-chart'),{
-      type:'line',
-      data:{labels:cd.map(function(m){return m.date.slice(5)}),
-        datasets:[
-          {label:'Weight (kg)',data:cd.map(function(m){return m.weight}),borderColor:'#FF3B30',backgroundColor:'#FF3B3022',tension:.3,pointRadius:3,yAxisID:'y',spanGaps:true},
-          {label:'Body Fat (%)',data:cd.map(function(m){return m.bodyFat}),borderColor:'#34C759',backgroundColor:'#34C75922',tension:.3,pointRadius:3,yAxisID:'y1',spanGaps:true}
-        ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{labels:{color:'#888',font:{size:10}}}},
-        scales:{
-          x:{ticks:{color:'#555',font:{size:9}},grid:{color:'#1e1e1e'}},
-          y:{position:'left',ticks:{color:'#FF3B30',font:{size:9}},grid:{color:'#1e1e1e'}},
-          y1:{position:'right',ticks:{color:'#34C759',font:{size:9}},grid:{drawOnChartArea:false}}
-        }}
-    });
-  }else{$('chart-wrap').style.display='none'}
-  if(!bodyMetrics.length){$('body-list').innerHTML='<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">No records yet</div>';return}
-  var h='';
-  var rev=bodyMetrics.slice().reverse();
-  rev.forEach(function(m,i){
-    var idx=bodyMetrics.length-1-i;
-    h+='<div class="card"><div style="color:var(--t3);font-size:11px">'+m.date+' '+(m.time||'')+'</div><div style="display:flex;align-items:center;gap:12px">'+(m.weight?'<span class="mono" style="color:var(--red);font-weight:700;font-size:13px">'+m.weight+'<span style="color:var(--t4);font-size:9px"> kg</span></span>':'')+(m.bodyFat?'<span class="mono" style="color:var(--grn);font-weight:700;font-size:13px">'+m.bodyFat+'<span style="color:var(--t4);font-size:9px"> %</span></span>':'')+'<button class="del" onclick="deleteBody('+idx+')">✕</button></div></div>';
-  });
-  $('body-list').innerHTML=h;
-}
-
+$('b-add').onclick=function(){var w=$('b-wt').value,bf=$('b-bf').value;if(!w&&!bf)return;bodyMetrics.push({date:todayStr(),time:nowTime(),weight:w?parseFloat(w):null,bodyFat:bf?parseFloat(bf):null});saveBody();$('b-wt').value='';$('b-bf').value='';renderBody()};
+$('b-copy').onclick=function(){var db=bodyMetrics.filter(function(m){return m.date===todayStr()});if(!db.length){copyText('今日の体組成記録なし',$('b-copy'));return}var b=db[db.length-1];var t='🏋️ '+todayStr()+' 体組成\n';if(b.weight)t+='体重: '+b.weight+' kg\n';if(b.bodyFat)t+='体脂肪率: '+b.bodyFat+' %';copyText(t,$('b-copy'))};
+function renderBody(){var byDate={};bodyMetrics.forEach(function(m){byDate[m.date]=m});var cd=Object.values(byDate).sort(function(a,b){return a.date.localeCompare(b.date)});if(cd.length>=2){$('chart-wrap').style.display='';if(bodyChart)bodyChart.destroy();bodyChart=new Chart($('body-chart'),{type:'line',data:{labels:cd.map(function(m){return m.date.slice(5)}),datasets:[{label:'Weight (kg)',data:cd.map(function(m){return m.weight}),borderColor:'#FF3B30',backgroundColor:'#FF3B3022',tension:.3,pointRadius:3,yAxisID:'y',spanGaps:true},{label:'Body Fat (%)',data:cd.map(function(m){return m.bodyFat}),borderColor:'#34C759',backgroundColor:'#34C75922',tension:.3,pointRadius:3,yAxisID:'y1',spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#888',font:{size:10}}}},scales:{x:{ticks:{color:'#555',font:{size:9}},grid:{color:'#1e1e1e'}},y:{position:'left',ticks:{color:'#FF3B30',font:{size:9}},grid:{color:'#1e1e1e'}},y1:{position:'right',ticks:{color:'#34C759',font:{size:9}},grid:{drawOnChartArea:false}}}}})}else{$('chart-wrap').style.display='none'}if(!bodyMetrics.length){$('body-list').innerHTML='<div style="color:#555;text-align:center;padding:28px;font-size:13px">No records yet</div>';return}var h='';bodyMetrics.slice().reverse().forEach(function(m,i){var idx=bodyMetrics.length-1-i;h+='<div class="card"><div style="color:#888;font-size:11px">'+m.date+' '+(m.time||'')+'</div><div style="display:flex;align-items:center;gap:12px">'+(m.weight?'<span class="mono" style="color:#FF3B30;font-weight:700;font-size:13px">'+m.weight+'<span style="color:#555;font-size:9px"> kg</span></span>':'')+(m.bodyFat?'<span class="mono" style="color:#34C759;font-weight:700;font-size:13px">'+m.bodyFat+'<span style="color:#555;font-size:9px"> %</span></span>':'')+'<button class="del" onclick="deleteBody('+idx+')">✕</button></div></div>'});$('body-list').innerHTML=h}
 window.deleteBody=function(idx){bodyMetrics.splice(idx,1);saveBody();renderBody()};
 
-// ═══ DATA BACKUP ═══
-function getAllData(){
-  return {_reptimer_backup:true,_version:3,_date:todayStr()+' '+nowTime(),exercises:exercises,logs:logs,bodyMetrics:bodyMetrics,meals:meals,settings:settings};
+// ═══ DATA + GOOGLE DRIVE ═══
+function getAllData(){return{_reptimer_backup:true,_version:10,_date:todayStr()+' '+nowTime(),exercises:exercises,logs:logs,bodyMetrics:bodyMetrics,meals:meals,settings:settings}}
+function renderDataStats(){var ld={};logs.forEach(function(l){ld[l.date]=1});var md={};meals.forEach(function(m){md[m.date]=1});$('d-stats').innerHTML='🏋️ トレーニング: <b>'+logs.length+'</b> sets ('+Object.keys(ld).length+' days)<br>🍽️ 食事: <b>'+meals.length+'</b> 件 ('+Object.keys(md).length+' days)<br>📊 体組成: <b>'+bodyMetrics.length+'</b> 件<br>💪 種目: <b>'+exercises.length+'</b> 件'}
+
+// Google Drive variables
+var gCid=LS.get('rt-gcid','');
+var gToken=null;
+var gFileId=LS.get('rt-gfid',null);
+var gSyncTimer=null;
+var gTokenClient=null;
+var DAPI='https://www.googleapis.com/drive/v3/files';
+var DUPLOAD='https://www.googleapis.com/upload/drive/v3/files';
+var FNAME='reptimer-backup.json';
+
+function gHeaders(){return{Authorization:'Bearer '+gToken}}
+
+function gFindFile(){
+  return fetch(DAPI+'?q=name%3D%27'+FNAME+'%27+and+trashed%3Dfalse&fields=files(id)&pageSize=1',{headers:gHeaders()}).then(function(r){return r.json()}).then(function(d){
+    if(d.files&&d.files.length>0){gFileId=d.files[0].id;LS.set('rt-gfid',gFileId);return gFileId}return null;
+  });
 }
 
-function renderDataStats(){
-  var logDates={};logs.forEach(function(l){logDates[l.date]=true});
-  var mealDates={};meals.forEach(function(m){mealDates[m.date]=true});
-  $('d-stats').innerHTML='🏋️ トレーニング: <b>'+logs.length+'</b> sets ('+Object.keys(logDates).length+' days)<br>🍽️ 食事: <b>'+meals.length+'</b> 件 ('+Object.keys(mealDates).length+' days)<br>📊 体組成: <b>'+bodyMetrics.length+'</b> 件<br>💪 種目: <b>'+exercises.length+'</b> 件';
-}
-
-$('d-export-file').onclick=function(){
-  var data=JSON.stringify(getAllData(),null,2);
-  var blob=new Blob([data],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  a.href=url;a.download='reptimer-backup-'+todayStr()+'.json';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
-
-$('d-export-clip').onclick=function(){copyText(JSON.stringify(getAllData()),$('d-export-clip'))};
-
-$('d-import-file').onclick=function(){$('d-file-input').click()};
-$('d-file-input').onchange=function(e){
-  var file=e.target.files[0];if(!file)return;
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    try{
-      var data=JSON.parse(ev.target.result);
-      if(!data._reptimer_backup){alert('Rep Timerのバックアップデータではありません');return}
-      if(!confirm('ファイルからデータを復元しますか？\n現在のデータは上書きされます。'))return;
-      if(data.exercises){exercises=data.exercises;saveEx()}
-      if(data.logs){logs=data.logs;saveLogs()}
-      if(data.bodyMetrics){bodyMetrics=data.bodyMetrics;saveBody()}
-      if(data.meals){meals=data.meals;saveMeals()}
-      if(data.settings){settings=data.settings;saveSets()}
+function gRead(){
+  if(!gToken||!gFileId)return;
+  fetch(DAPI+'/'+gFileId+'?alt=media',{headers:gHeaders()}).then(function(r){if(!r.ok)throw'err';return r.json()}).then(function(data){
+    if(data&&data._reptimer_backup&&logs.length===0&&data.logs&&data.logs.length>0){
+      if(data.exercises){exercises=data.exercises;LS.set('rt-exercises',exercises)}
+      if(data.logs){logs=data.logs;LS.set('rt-logs',logs)}
+      if(data.bodyMetrics){bodyMetrics=data.bodyMetrics;LS.set('rt-body',bodyMetrics)}
+      if(data.meals){meals=data.meals;LS.set('rt-meals',meals)}
       renderExSelect();renderDataStats();
-      alert('✓ データを復元しました！');
-    }catch(e){alert('ファイルの読み込みに失敗しました')}
-  };
-  reader.readAsText(file);e.target.value='';
-};
+      $('d-status').textContent='✓ Driveからデータ復元済';
+    }
+  }).catch(function(){});
+}
 
-$('d-clear').onclick=function(){
-  if(!confirm('本当にすべてのデータを削除しますか？'))return;
-  if(!confirm('最後の確認です。本当に削除しますか？'))return;
-  exercises=[];logs=[];bodyMetrics=[];meals=[];settings={repTime:4,restTime:60,snd:true};
-  saveEx();saveLogs();saveBody();saveMeals();saveSets();
-  renderExSelect();renderDataStats();
-  alert('全データを削除しました');
+function gWrite(){
+  if(!gToken)return;
+  var body=JSON.stringify(getAllData());
+  if(gFileId){
+    fetch(DUPLOAD+'/'+gFileId+'?uploadType=media',{method:'PATCH',headers:{Authorization:'Bearer '+gToken,'Content-Type':'application/json'},body:body}).then(function(r){if(r.ok){LS.set('rt-gsync',todayStr()+' '+nowTime());gUpdateUI()}}).catch(function(){});
+  }else{
+    var boundary='rtb';
+    var mb='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({name:FNAME,mimeType:'application/json'})+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+body+'\r\n--'+boundary+'--';
+    fetch(DUPLOAD+'?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+gToken,'Content-Type':'multipart/related; boundary='+boundary},body:mb}).then(function(r){return r.json()}).then(function(d){if(d.id){gFileId=d.id;LS.set('rt-gfid',gFileId);LS.set('rt-gsync',todayStr()+' '+nowTime());gUpdateUI()}}).catch(function(){});
+  }
+}
+
+function gScheduleSync(){if(!gToken)return;if(gSyncTimer)clearTimeout(gSyncTimer);gSyncTimer=setTimeout(function(){gWrite()},2000)}
+
+function gInitToken(){
+  if(!gCid||!window.google||!google.accounts||!google.accounts.oauth2)return;
+  try{
+    gTokenClient=google.accounts.oauth2.initTokenClient({client_id:gCid,scope:'https://www.googleapis.com/auth/drive.file',callback:function(resp){
+      if(resp.access_token){gToken=resp.access_token;gOnSignIn()}
+    }});
+  }catch(e){}
+}
+
+function gDoSignIn(){if(!gTokenClient)gInitToken();if(gTokenClient)gTokenClient.requestAccessToken()}
+
+function gOnSignIn(){
+  gUpdateUI();
+  gFindFile().then(function(id){if(id){gRead()}else{gWrite()}}).catch(function(){});
+}
+
+function gUpdateUI(){
+  var hasCid=!!gCid;var signedIn=!!gToken;
+  $('d-setup').style.display=hasCid?'none':'';
+  $('d-signin').style.display=(hasCid&&!signedIn)?'':'none';
+  $('d-connected').style.display=(hasCid&&signedIn)?'':'none';
+  if(signedIn){var ls=LS.get('rt-gsync','');$('d-status').textContent=ls?'最終同期: '+ls:'同期準備中...'}
+}
+
+// Override save functions to also sync to Drive
+(function(){
+  var oEx=saveEx,oLogs=saveLogs,oBody=saveBody,oMeals=saveMeals;
+  saveEx=function(){oEx();gScheduleSync()};
+  saveLogs=function(){oLogs();gScheduleSync()};
+  saveBody=function(){oBody();gScheduleSync()};
+  saveMeals=function(){oMeals();gScheduleSync()};
+})();
+
+// UI handlers
+$('d-save-cid').onclick=function(){
+  var id=$('d-client-id').value.trim();
+  if(!id){alert('Client IDを入力してください');return}
+  gCid=id;LS.set('rt-gcid',gCid);
+  try{gInitToken()}catch(e){}
+  gUpdateUI();
+  alert('✓ 保存しました。次に「Googleでログイン」をタップしてください。');
 };
+$('d-do-signin').onclick=function(){gDoSignIn()};
+$('d-signout').onclick=function(){try{google.accounts.oauth2.revoke(gToken)}catch(e){}gToken=null;gUpdateUI()};
+$('d-force').onclick=function(){if(gToken){$('d-status').textContent='同期中...';gWrite()}};
+
+$('d-export-file').onclick=function(){var data=JSON.stringify(getAllData(),null,2);var blob=new Blob([data],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='reptimer-backup-'+todayStr()+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url)};
+$('d-import-file').onclick=function(){$('d-file-input').click()};
+$('d-file-input').onchange=function(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var data=JSON.parse(ev.target.result);if(!data._reptimer_backup){alert('バックアップデータではありません');return}if(!confirm('復元しますか？現在のデータは上書きされます。'))return;if(data.exercises){exercises=data.exercises;saveEx()}if(data.logs){logs=data.logs;saveLogs()}if(data.bodyMetrics){bodyMetrics=data.bodyMetrics;saveBody()}if(data.meals){meals=data.meals;saveMeals()}renderExSelect();renderDataStats();alert('✓ 復元しました！')}catch(e){alert('読み込み失敗')}};reader.readAsText(file);e.target.value=''};
+$('d-clear').onclick=function(){if(!confirm('全データを削除しますか？'))return;if(!confirm('最後の確認です。本当に？'))return;exercises=[];logs=[];bodyMetrics=[];meals=[];settings={repTime:4,restTime:60,snd:true};saveEx();saveLogs();saveBody();saveMeals();saveSets();renderExSelect();renderDataStats();alert('削除しました')};
+
+// Init
+if(gCid)$('d-client-id').value=gCid;
+gUpdateUI();
+var gisWait=setInterval(function(){if(window.google&&google.accounts&&google.accounts.oauth2){clearInterval(gisWait);gInitToken()}},500);
+setTimeout(function(){clearInterval(gisWait)},10000);
 </script>
 </body>
 </html>
