@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -81,7 +80,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- TIMER -->
-
 <div class="view on" id="v-timer" style="display:flex;flex-direction:column;align-items:center;gap:16px">
   <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px">
     <div>
@@ -119,7 +117,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- LOG -->
-
 <div class="view" id="v-log">
   <pre id="log-report" style="background:#0c0c0c;border:1px solid var(--c2);border-radius:10px;padding:12px;font-size:11px;color:#999;white-space:pre-wrap;line-height:1.6;margin-bottom:8px;overflow-x:auto" class="mono"></pre>
   <button id="log-copy" class="copy-btn" style="background:#0d0d1a;color:var(--blu);border-color:#6B8AFF33">📝 今日のレポートをコピー</button>
@@ -129,7 +126,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- MEAL -->
-
 <div class="view" id="v-meal">
   <div class="meal-types" id="meal-types"></div>
   <textarea id="m-content" class="inp" rows="2" placeholder="食事内容を入力..." style="font-size:13px;margin-bottom:8px"></textarea>
@@ -142,7 +138,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- BODY -->
-
 <div class="view" id="v-body">
   <div style="display:flex;gap:8px;margin-bottom:10px">
     <div style="flex:1"><label class="lbl">Weight (kg)</label><input id="b-wt" type="number" step="0.1" class="inp mono" placeholder="75.0"></div>
@@ -156,7 +151,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- DATA -->
-
 <div class="view" id="v-data">
   <div style="text-align:center;margin-bottom:14px">
     <div style="font-size:36px;margin-bottom:4px">💾</div>
@@ -181,7 +175,6 @@ textarea.inp{resize:vertical;line-height:1.5;text-align:left}
 </div>
 
 <!-- EDIT MODAL -->
-
 <div class="modal-bg" id="modal-bg">
   <div class="modal" id="modal"></div>
 </div>
@@ -285,224 +278,220 @@ function openEditMeal(idx){
   $('modal').innerHTML='<h3>食事編集<button class="del" onclick="closeModal()" style="font-size:18px">✕</button></h3>'+
     '<div class="row"><div><label class="lbl">Type</label><select id="ed-mtype" class="inp inp-l" style="font-size:13px">'+opts+'</select></div></div>'+
     '<div class="row"><div><label class="lbl">Content</label><textarea id="ed-mcont" class="inp" rows="2" style="font-size:13px;text-align:left">'+m.content+'</textarea></div></div>'+
-
-```
-'<div class="row"><div><label class="lbl">kcal</label><input id="ed-mcal" type="number" class="inp mono" value="'+(m.calories||'')+'" placeholder="任意"></div>'+
-'<div><label class="lbl">Time</label><input id="ed-mtime" type="time" class="inp mono" value="'+(m.time||'')+'" style="font-size:13px"></div></div>'+
-'<div class="row"><div><label class="lbl">Date</label><input id="ed-mdate" type="date" class="inp mono" value="'+m.date+'" style="font-size:13px"></div><div></div></div>'+
-'<div class="actions"><button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>'+
-'<button style="background:var(--red);color:#fff" onclick="saveEditMeal('+idx+')">Save</button></div>';
-```
-
-$(‘modal-bg’).classList.add(‘on’);
+    '<div class="row"><div><label class="lbl">kcal</label><input id="ed-mcal" type="number" class="inp mono" value="'+(m.calories||'')+'" placeholder="任意"></div>'+
+    '<div><label class="lbl">Time</label><input id="ed-mtime" type="time" class="inp mono" value="'+(m.time||'')+'" style="font-size:13px"></div></div>'+
+    '<div class="row"><div><label class="lbl">Date</label><input id="ed-mdate" type="date" class="inp mono" value="'+m.date+'" style="font-size:13px"></div><div></div></div>'+
+    '<div class="actions"><button style="background:#282828;color:var(--t3)" onclick="closeModal()">Cancel</button>'+
+    '<button style="background:var(--red);color:#fff" onclick="saveEditMeal('+idx+')">Save</button></div>';
+  $('modal-bg').classList.add('on');
 }
 window.saveEditMeal=function(idx){
-meals[idx].type=$(‘ed-mtype’).value;
-meals[idx].content=$(‘ed-mcont’).value.trim()||meals[idx].content;
-meals[idx].calories=$(‘ed-mcal’).value?parseInt($(‘ed-mcal’).value):null;
-meals[idx].time=$(‘ed-mtime’).value||meals[idx].time;
-meals[idx].date=$(‘ed-mdate’).value||meals[idx].date;
-saveMeals();closeModal();renderMeals();
+  meals[idx].type=$('ed-mtype').value;
+  meals[idx].content=$('ed-mcont').value.trim()||meals[idx].content;
+  meals[idx].calories=$('ed-mcal').value?parseInt($('ed-mcal').value):null;
+  meals[idx].time=$('ed-mtime').value||meals[idx].time;
+  meals[idx].date=$('ed-mdate').value||meals[idx].date;
+  saveMeals();closeModal();renderMeals();
 };
 
 // Tabs
-var views=[‘timer’,‘log’,‘meal’,‘body’,‘data’];
-document.querySelectorAll(’#tabs button’).forEach(function(b){
-b.onclick=function(){
-document.querySelectorAll(’#tabs button’).forEach(function(x){x.classList.remove(‘on’)});
-b.classList.add(‘on’);
-views.forEach(function(v){var el=$(‘v-’+v);el.classList.toggle(‘on’,v===b.dataset.v);el.style.display=v===b.dataset.v?(v===‘timer’?‘flex’:‘block’):‘none’});
-if(b.dataset.v===‘log’)renderLog();if(b.dataset.v===‘meal’)renderMeals();if(b.dataset.v===‘body’)renderBody();if(b.dataset.v===‘data’)renderDataStats();
-};
+var views=['timer','log','meal','body','data'];
+document.querySelectorAll('#tabs button').forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll('#tabs button').forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on');
+    views.forEach(function(v){var el=$('v-'+v);el.classList.toggle('on',v===b.dataset.v);el.style.display=v===b.dataset.v?(v==='timer'?'flex':'block'):'none'});
+    if(b.dataset.v==='log')renderLog();if(b.dataset.v==='meal')renderMeals();if(b.dataset.v==='body')renderBody();if(b.dataset.v==='data')renderDataStats();
+  };
 });
 
 var MEAL_TYPES=[
-{id:‘breakfast’,label:‘朝食’,icon:‘🍳’},{id:‘lunch’,label:‘昼食’,icon:‘🍛’},
-{id:‘dinner’,label:‘夕食’,icon:‘🍖’},{id:‘snack’,label:‘間食’,icon:‘🍪’},
-{id:‘supplement’,label:‘サプリ’,icon:‘💊’}
+  {id:'breakfast',label:'朝食',icon:'🍳'},{id:'lunch',label:'昼食',icon:'🍛'},
+  {id:'dinner',label:'夕食',icon:'🍖'},{id:'snack',label:'間食',icon:'🍪'},
+  {id:'supplement',label:'サプリ',icon:'💊'}
 ];
 
 // ═══ TIMER ═══
 var CIRC=2*Math.PI*118;
-var mode=‘idle’,tLeft=0,repCount=0,setCount=0,totalReps=0;
+var mode='idle',tLeft=0,repCount=0,setCount=0,totalReps=0;
 var iv=null,tRef=0,rRef=0,lastCd=-1,lastSec=-1,warned10=false;
 
-$(‘t-rep’).value=settings.repTime;
-$(‘t-rest’).value=settings.restTime;
+$('t-rep').value=settings.repTime;
+$('t-rest').value=settings.restTime;
 
-function updateSndBtn(){var b=$(‘t-snd’);b.textContent=settings.snd?‘🔊 ON’:‘🔇 OFF’;b.style.background=settings.snd?’#0d1a0d’:’#1a0d0d’;b.style.color=settings.snd?‘var(–grn)’:‘var(–red)’;b.style.borderColor=settings.snd?’#34C75933’:’#FF3B3033’}
+function updateSndBtn(){var b=$('t-snd');b.textContent=settings.snd?'🔊 ON':'🔇 OFF';b.style.background=settings.snd?'#0d1a0d':'#1a0d0d';b.style.color=settings.snd?'var(--grn)':'var(--red)';b.style.borderColor=settings.snd?'#34C75933':'#FF3B3033'}
 updateSndBtn();
-$(‘t-snd’).onclick=function(){settings.snd=!settings.snd;saveSets();updateSndBtn()};
+$('t-snd').onclick=function(){settings.snd=!settings.snd;saveSets();updateSndBtn()};
 
-function getRepTime(){return parseFloat($(‘t-rep’).value)||4}
-function getRestTime(){return parseInt($(‘t-rest’).value)||60}
-$(‘t-rep’).oninput=function(){settings.repTime=getRepTime();saveSets()};
-$(‘t-rest’).oninput=function(){settings.restTime=getRestTime();saveSets()};
+function getRepTime(){return parseFloat($('t-rep').value)||4}
+function getRestTime(){return parseInt($('t-rest').value)||60}
+$('t-rep').oninput=function(){settings.repTime=getRepTime();saveSets()};
+$('t-rest').oninput=function(){settings.restTime=getRestTime();saveSets()};
 
 function renderExSelect(){
-var s=$(‘t-ex’),cur=s.value;
-s.innerHTML=exercises.length===0?’<option value="">No exercises</option>’:exercises.map(function(e){return ‘<option value="'+e+'">’+e+’</option>’}).join(’’);
-if(exercises.indexOf(cur)>=0)s.value=cur;
-$(‘t-delex’).style.display=exercises.length>0?’’:‘none’;
-$(‘t-delex’).textContent=‘Delete “’+$(‘t-ex’).value+’”’;
-var lf=$(‘log-filter’),lfv=lf.value;
-lf.innerHTML=’<option value="all">All Exercises</option>’+exercises.map(function(e){return ‘<option value="'+e+'">’+e+’</option>’}).join(’’);
-if(exercises.indexOf(lfv)>=0||lfv===‘all’)lf.value=lfv;
+  var s=$('t-ex'),cur=s.value;
+  s.innerHTML=exercises.length===0?'<option value="">No exercises</option>':exercises.map(function(e){return '<option value="'+e+'">'+e+'</option>'}).join('');
+  if(exercises.indexOf(cur)>=0)s.value=cur;
+  $('t-delex').style.display=exercises.length>0?'':'none';
+  $('t-delex').textContent='Delete "'+$('t-ex').value+'"';
+  var lf=$('log-filter'),lfv=lf.value;
+  lf.innerHTML='<option value="all">All Exercises</option>'+exercises.map(function(e){return '<option value="'+e+'">'+e+'</option>'}).join('');
+  if(exercises.indexOf(lfv)>=0||lfv==='all')lf.value=lfv;
 }
 renderExSelect();
-$(‘t-ex’).onchange=function(){$(‘t-delex’).textContent=‘Delete “’+$(‘t-ex’).value+’”’};
-$(‘t-addex’).onclick=function(){var v=$(‘t-newex’).value.trim();if(v&&exercises.indexOf(v)<0){exercises.push(v);saveEx();renderExSelect();$(‘t-ex’).value=v;$(‘t-delex’).textContent=‘Delete “’+v+’”’}$(‘t-newex’).value=’’};
-$(‘t-newex’).onkeydown=function(e){if(e.key===‘Enter’)$(‘t-addex’).click()};
-$(‘t-delex’).onclick=function(){var v=$(‘t-ex’).value;exercises=exercises.filter(function(e){return e!==v});saveEx();renderExSelect()};
+$('t-ex').onchange=function(){$('t-delex').textContent='Delete "'+$('t-ex').value+'"'};
+$('t-addex').onclick=function(){var v=$('t-newex').value.trim();if(v&&exercises.indexOf(v)<0){exercises.push(v);saveEx();renderExSelect();$('t-ex').value=v;$('t-delex').textContent='Delete "'+v+'"'}$('t-newex').value=''};
+$('t-newex').onkeydown=function(e){if(e.key==='Enter')$('t-addex').click()};
+$('t-delex').onclick=function(){var v=$('t-ex').value;exercises=exercises.filter(function(e){return e!==v});saveEx();renderExSelect()};
 
 function updateRing(){
-var rt=getRepTime(),rest=getRestTime(),prog=0;
-if(mode===‘rep’)prog=(rt-tLeft)/rt;else if(mode===‘rest’)prog=(rest-tLeft)/rest;
-var col=mode===‘rep’?‘var(–red)’:mode===‘rest’?‘var(–grn)’:’#444’;
-$(‘ring-arc’).setAttribute(‘stroke’,col);$(‘ring-arc’).setAttribute(‘stroke-dashoffset’,CIRC*(1-prog));
-$(‘ring-label’).textContent=mode===‘idle’?‘Ready’:mode===‘rep’?‘Rep’:‘Rest’;
-$(‘ring-label’).style.color=col;
-if(mode===‘idle’)$(‘ring-time’).textContent=‘0.0’;
-else if(mode===‘rest’&&tLeft>9.95)$(‘ring-time’).textContent=Math.ceil(tLeft);
-else $(‘ring-time’).textContent=tLeft.toFixed(1);
-$(‘ring-rep’).textContent=mode===‘rep’?‘Rep #’+repCount:’’;
-$(‘st-sets’).textContent=setCount;$(‘st-reps’).textContent=repCount;$(‘st-total’).textContent=totalReps;
+  var rt=getRepTime(),rest=getRestTime(),prog=0;
+  if(mode==='rep')prog=(rt-tLeft)/rt;else if(mode==='rest')prog=(rest-tLeft)/rest;
+  var col=mode==='rep'?'var(--red)':mode==='rest'?'var(--grn)':'#444';
+  $('ring-arc').setAttribute('stroke',col);$('ring-arc').setAttribute('stroke-dashoffset',CIRC*(1-prog));
+  $('ring-label').textContent=mode==='idle'?'Ready':mode==='rep'?'Rep':'Rest';
+  $('ring-label').style.color=col;
+  if(mode==='idle')$('ring-time').textContent='0.0';
+  else if(mode==='rest'&&tLeft>9.95)$('ring-time').textContent=Math.ceil(tLeft);
+  else $('ring-time').textContent=tLeft.toFixed(1);
+  $('ring-rep').textContent=mode==='rep'?'Rep #'+repCount:'';
+  $('st-sets').textContent=setCount;$('st-reps').textContent=repCount;$('st-total').textContent=totalReps;
 }
 
 function updateMainBtn(){
-var b=$(‘t-main’);
-if(mode===‘idle’){b.textContent=‘▶ START’;b.style.background=‘var(–red)’}
-else if(mode===‘rep’){b.textContent=‘⏸ REST’;b.style.background=‘var(–grn)’}
-else{b.textContent=‘⏩ SKIP’;b.style.background=‘var(–org)’}
-$(‘t-reset’).style.display=mode===‘idle’?‘none’:’’;
+  var b=$('t-main');
+  if(mode==='idle'){b.textContent='▶ START';b.style.background='var(--red)'}
+  else if(mode==='rep'){b.textContent='⏸ REST';b.style.background='var(--grn)'}
+  else{b.textContent='⏩ SKIP';b.style.background='var(--org)'}
+  $('t-reset').style.display=mode==='idle'?'none':'';
 }
 
 function stop(){if(iv){clearInterval(iv);iv=null}}
 
 function startRep(){
-stop();requestWakeLock();var rt=getRepTime();
-mode=‘rep’;tRef=rt;tLeft=rt;lastSec=-1;lastCd=-1;
-if(settings.snd)SFX.setStart();
-updateMainBtn();updateRing();
-iv=setInterval(function(){
-tRef-=0.1;
-var sec=Math.floor(tRef);
-if(sec!==lastSec&&sec>=0&&tRef>0.05){lastSec=sec;if(settings.snd)SFX.repTick()}
-if(tRef<=0){rRef++;repCount=rRef;totalReps++;if(settings.snd)SFX.repDone();tRef=rt;lastSec=-1}
-tLeft=Math.max(0,tRef);updateRing();
-},100);
+  stop();requestWakeLock();var rt=getRepTime();
+  mode='rep';tRef=rt;tLeft=rt;lastSec=-1;lastCd=-1;
+  if(settings.snd)SFX.setStart();
+  updateMainBtn();updateRing();
+  iv=setInterval(function(){
+    tRef-=0.1;
+    var sec=Math.floor(tRef);
+    if(sec!==lastSec&&sec>=0&&tRef>0.05){lastSec=sec;if(settings.snd)SFX.repTick()}
+    if(tRef<=0){rRef++;repCount=rRef;totalReps++;if(settings.snd)SFX.repDone();tRef=rt;lastSec=-1}
+    tLeft=Math.max(0,tRef);updateRing();
+  },100);
 }
 
 function startRest(){
-stop();var reps=rRef,rt=getRepTime(),rest=getRestTime();
-mode=‘rest’;tRef=rest;tLeft=rest;lastCd=-1;warned10=false;
-setCount++;
-var ex=$(‘t-ex’).value;
-if(reps>0&&ex){logs.push({date:todayStr(),time:nowTime(),exercise:ex,reps:reps,set:setCount,repTime:rt,restTime:rest});saveLogs()}
-rRef=0;repCount=0;
-if(settings.snd)SFX.restStart();
-updateMainBtn();updateRing();
-iv=setInterval(function(){
-tRef-=0.1;var sec=Math.ceil(tRef);
-if(!warned10&&sec<=10&&sec>=1&&tRef>0){warned10=true;if(settings.snd)SFX.warn10()}
-if(sec<=5&&sec>=1&&sec!==lastCd&&tRef>0){lastCd=sec;if(settings.snd)SFX.countdown()}
-if(tRef<=0){stop();if(settings.snd)SFX.restEnd();startRep();return}
-tLeft=Math.max(0,tRef);updateRing();
-},100);
+  stop();var reps=rRef,rt=getRepTime(),rest=getRestTime();
+  mode='rest';tRef=rest;tLeft=rest;lastCd=-1;warned10=false;
+  setCount++;
+  var ex=$('t-ex').value;
+  if(reps>0&&ex){logs.push({date:todayStr(),time:nowTime(),exercise:ex,reps:reps,set:setCount,repTime:rt,restTime:rest});saveLogs()}
+  rRef=0;repCount=0;
+  if(settings.snd)SFX.restStart();
+  updateMainBtn();updateRing();
+  iv=setInterval(function(){
+    tRef-=0.1;var sec=Math.ceil(tRef);
+    if(!warned10&&sec<=10&&sec>=1&&tRef>0){warned10=true;if(settings.snd)SFX.warn10()}
+    if(sec<=5&&sec>=1&&sec!==lastCd&&tRef>0){lastCd=sec;if(settings.snd)SFX.countdown()}
+    if(tRef<=0){stop();if(settings.snd)SFX.restEnd();startRep();return}
+    tLeft=Math.max(0,tRef);updateRing();
+  },100);
 }
 
-$(‘t-main’).onclick=function(){try{ac()}catch(e){};if(mode===‘idle’){rRef=0;repCount=0;startRep()}else if(mode===‘rep’)startRest();else{stop();startRep()}};
-$(‘t-reset’).onclick=function(){stop();releaseWakeLock();mode=‘idle’;tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
+$('t-main').onclick=function(){try{ac()}catch(e){};if(mode==='idle'){rRef=0;repCount=0;startRep()}else if(mode==='rep')startRest();else{stop();startRep()}};
+$('t-reset').onclick=function(){stop();releaseWakeLock();mode='idle';tLeft=0;repCount=0;rRef=0;setCount=0;totalReps=0;updateMainBtn();updateRing()};
 updateRing();
 
 // ═══ REPORT ═══
 function genReport(d){
-var dl=logs.filter(function(l){return l.date===d}),db=bodyMetrics.filter(function(m){return m.date===d}),dm=meals.filter(function(m){return m.date===d});
-var L=[‘📅 ‘+d,‘─’.repeat(28)];
-if(db.length){var b=db[db.length-1];L.push(’\n🏋️ 体組成’);if(b.weight)L.push(’  体重: ‘+b.weight+’ kg’);if(b.bodyFat)L.push(’  体脂肪率: ‘+b.bodyFat+’ %’)}
-if(dm.length){L.push(’\n🍽️ 食事’);dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l=’  ‘+(mt?mt.icon:‘🍽’)+’ ‘+(mt?mt.label:m.type);if(m.time)l+=’ (’+m.time+’)’;l+=’: ‘+m.content;if(m.calories)l+=’ [’+m.calories+‘kcal]’;L.push(l)});var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push(’  合計: ‘+tc+’ kcal’)}
-if(dl.length){var byEx={};dl.forEach(function(l){if(!byEx[l.exercise])byEx[l.exercise]=[];byEx[l.exercise].push(l)});L.push(’\n💪 トレーニング’);Object.keys(byEx).forEach(function(ex){var sets=byEx[ex];var tr=sets.reduce(function(s,x){return s+x.reps},0);L.push(’\n  ▸ ‘+ex);sets.forEach(function(s){L.push(’    Set’+s.set+’: ’+s.reps+‘reps (’+s.repTime+’s/rep, rest ‘+s.restTime+‘s)’)});L.push(’    → ’+sets.length+‘sets / ‘+tr+‘reps’)});var gt=dl.reduce(function(s,l){return s+l.reps},0);L.push(’\n’+‘─’.repeat(28));L.push(’📊 ’+Object.keys(byEx).length+‘種目 / ‘+dl.length+‘sets / ‘+gt+‘reps’)}
-if(!dl.length&&!db.length&&!dm.length)L.push(’\n記録なし’);
-return L.join(’\n’);
+  var dl=logs.filter(function(l){return l.date===d}),db=bodyMetrics.filter(function(m){return m.date===d}),dm=meals.filter(function(m){return m.date===d});
+  var L=['📅 '+d,'─'.repeat(28)];
+  if(db.length){var b=db[db.length-1];L.push('\n🏋️ 体組成');if(b.weight)L.push('  体重: '+b.weight+' kg');if(b.bodyFat)L.push('  体脂肪率: '+b.bodyFat+' %')}
+  if(dm.length){L.push('\n🍽️ 食事');dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l='  '+(mt?mt.icon:'🍽')+' '+(mt?mt.label:m.type);if(m.time)l+=' ('+m.time+')';l+=': '+m.content;if(m.calories)l+=' ['+m.calories+'kcal]';L.push(l)});var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push('  合計: '+tc+' kcal')}
+  if(dl.length){var byEx={};dl.forEach(function(l){if(!byEx[l.exercise])byEx[l.exercise]=[];byEx[l.exercise].push(l)});L.push('\n💪 トレーニング');Object.keys(byEx).forEach(function(ex){var sets=byEx[ex];var tr=sets.reduce(function(s,x){return s+x.reps},0);L.push('\n  ▸ '+ex);sets.forEach(function(s){L.push('    Set'+s.set+': '+s.reps+'reps ('+s.repTime+'s/rep, rest '+s.restTime+'s)')});L.push('    → '+sets.length+'sets / '+tr+'reps')});var gt=dl.reduce(function(s,l){return s+l.reps},0);L.push('\n'+'─'.repeat(28));L.push('📊 '+Object.keys(byEx).length+'種目 / '+dl.length+'sets / '+gt+'reps')}
+  if(!dl.length&&!db.length&&!dm.length)L.push('\n記録なし');
+  return L.join('\n');
 }
 
 function copyText(txt,btn){
-try{navigator.clipboard.writeText(txt)}catch(e){var t=document.createElement(‘textarea’);t.value=txt;document.body.appendChild(t);t.select();document.execCommand(‘copy’);document.body.removeChild(t)}
-var orig=btn.textContent;btn.textContent=‘✓ コピーしました！’;btn.style.background=’#0d1a0d’;btn.style.color=‘var(–grn)’;btn.style.borderColor=’#34C75933’;
-setTimeout(function(){btn.textContent=orig;btn.style.background=’#0d0d1a’;btn.style.color=‘var(–blu)’;btn.style.borderColor=’#6B8AFF33’},2000);
+  try{navigator.clipboard.writeText(txt)}catch(e){var t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t)}
+  var orig=btn.textContent;btn.textContent='✓ コピーしました！';btn.style.background='#0d1a0d';btn.style.color='var(--grn)';btn.style.borderColor='#34C75933';
+  setTimeout(function(){btn.textContent=orig;btn.style.background='#0d0d1a';btn.style.color='var(--blu)';btn.style.borderColor='#6B8AFF33'},2000);
 }
 
 // ═══ LOG ═══
-$(‘log-copy’).onclick=function(){copyText(genReport(todayStr()),$(‘log-copy’))};
-$(‘log-filter’).onchange=renderLog;
+$('log-copy').onclick=function(){copyText(genReport(todayStr()),$('log-copy'))};
+$('log-filter').onchange=renderLog;
 
 function renderLog(){
-$(‘log-report’).textContent=genReport(todayStr());
-var filt=$(‘log-filter’).value;
-var fl=filt===‘all’?logs:logs.filter(function(l){return l.exercise===filt});
-var grouped={};fl.forEach(function(l){if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l)});
-var dates=Object.keys(grouped).sort().reverse();
-if(!dates.length){$(‘log-list’).innerHTML=’<div style="color:var(--t4);text-align:center;padding:36px;font-size:13px">No records yet</div>’;return}
-var h=’’;
-dates.forEach(function(date){
-h+=’<div class="date-hdr"><span>’+date+’</span><button onclick="clearLogDay(\''+date+'\')">Clear day</button></div>’;
-grouped[date].forEach(function(entry){
-var idx=logs.indexOf(entry);
-h+=’<div class="card"><div style="flex:1;cursor:pointer" onclick="openEditLog('+idx+')"><span style="color:var(--t2);font-size:13px;font-weight:600">’+entry.exercise+’</span><span style="color:var(--t4);font-size:11px;margin-left:6px">Set’+entry.set+’</span><div style="margin-top:2px"><span class="mono" style="color:var(--red);font-weight:700;font-size:15px">’+entry.reps+’</span><span style="color:var(--t4);font-size:10px"> reps</span><span style="color:var(--t5);font-size:9px;margin-left:6px">’+entry.repTime+‘s / ‘+entry.restTime+‘s</span></div></div><div style="display:flex;gap:4px"><button class="edit-btn" onclick="openEditLog('+idx+')">✎</button><button class="del" onclick="deleteLog('+idx+')">✕</button></div></div>’;
-});
-h+=’<div style="height:12px"></div>’;
-});
-$(‘log-list’).innerHTML=h;
+  $('log-report').textContent=genReport(todayStr());
+  var filt=$('log-filter').value;
+  var fl=filt==='all'?logs:logs.filter(function(l){return l.exercise===filt});
+  var grouped={};fl.forEach(function(l){if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l)});
+  var dates=Object.keys(grouped).sort().reverse();
+  if(!dates.length){$('log-list').innerHTML='<div style="color:var(--t4);text-align:center;padding:36px;font-size:13px">No records yet</div>';return}
+  var h='';
+  dates.forEach(function(date){
+    h+='<div class="date-hdr"><span>'+date+'</span><button onclick="clearLogDay(\''+date+'\')">Clear day</button></div>';
+    grouped[date].forEach(function(entry){
+      var idx=logs.indexOf(entry);
+      h+='<div class="card"><div style="flex:1;cursor:pointer" onclick="openEditLog('+idx+')"><span style="color:var(--t2);font-size:13px;font-weight:600">'+entry.exercise+'</span><span style="color:var(--t4);font-size:11px;margin-left:6px">Set'+entry.set+'</span><div style="margin-top:2px"><span class="mono" style="color:var(--red);font-weight:700;font-size:15px">'+entry.reps+'</span><span style="color:var(--t4);font-size:10px"> reps</span><span style="color:var(--t5);font-size:9px;margin-left:6px">'+entry.repTime+'s / '+entry.restTime+'s</span></div></div><div style="display:flex;gap:4px"><button class="edit-btn" onclick="openEditLog('+idx+')">✎</button><button class="del" onclick="deleteLog('+idx+')">✕</button></div></div>';
+    });
+    h+='<div style="height:12px"></div>';
+  });
+  $('log-list').innerHTML=h;
 }
 
 window.openEditLog=openEditLog;
 window.deleteLog=function(idx){logs.splice(idx,1);saveLogs();renderLog()};
-window.clearLogDay=function(d){if(confirm(d+‘の記録を全て削除しますか？’)){logs=logs.filter(function(l){return l.date!==d});saveLogs();renderLog()}};
+window.clearLogDay=function(d){if(confirm(d+'の記録を全て削除しますか？')){logs=logs.filter(function(l){return l.date!==d});saveLogs();renderLog()}};
 
 // ═══ MEAL ═══
-var mealType=‘breakfast’;
-function renderMealTypes(){$(‘meal-types’).innerHTML=MEAL_TYPES.map(function(mt){return ‘<button class="'+(mt.id===mealType?'on':'')+'" onclick="setMealType(\''+mt.id+'\')">’+mt.icon+’ ‘+mt.label+’</button>’}).join(’’)}
+var mealType='breakfast';
+function renderMealTypes(){$('meal-types').innerHTML=MEAL_TYPES.map(function(mt){return '<button class="'+(mt.id===mealType?'on':'')+'" onclick="setMealType(\''+mt.id+'\')">'+mt.icon+' '+mt.label+'</button>'}).join('')}
 renderMealTypes();
 window.setMealType=function(id){mealType=id;renderMealTypes()};
 
-$(‘m-add’).onclick=function(){
-var c=$(‘m-content’).value.trim();if(!c)return;
-var cal=$(‘m-cal’).value?parseInt($(‘m-cal’).value):null;
-meals.push({date:todayStr(),time:nowTime(),type:mealType,content:c,calories:cal});
-saveMeals();$(‘m-content’).value=’’;$(‘m-cal’).value=’’;renderMeals();
+$('m-add').onclick=function(){
+  var c=$('m-content').value.trim();if(!c)return;
+  var cal=$('m-cal').value?parseInt($('m-cal').value):null;
+  meals.push({date:todayStr(),time:nowTime(),type:mealType,content:c,calories:cal});
+  saveMeals();$('m-content').value='';$('m-cal').value='';renderMeals();
 };
 
-$(‘m-copy’).onclick=function(){
-var dm=meals.filter(function(m){return m.date===todayStr()});
-if(!dm.length){copyText(‘今日の食事記録なし’,$(‘m-copy’));return}
-var L=[‘🍽️ ‘+todayStr()+’ 食事報告’];
-dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l=(mt?mt.icon:’’)+’ ‘+(mt?mt.label:m.type);if(m.time)l+=’ (’+m.time+’)’;l+=’: ‘+m.content;if(m.calories)l+=’ [’+m.calories+‘kcal]’;L.push(l)});
-var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push(’\n合計: ‘+tc+’ kcal’);
-copyText(L.join(’\n’),$(‘m-copy’));
+$('m-copy').onclick=function(){
+  var dm=meals.filter(function(m){return m.date===todayStr()});
+  if(!dm.length){copyText('今日の食事記録なし',$('m-copy'));return}
+  var L=['🍽️ '+todayStr()+' 食事報告'];
+  dm.forEach(function(m){var mt=MEAL_TYPES.find(function(t){return t.id===m.type});var l=(mt?mt.icon:'')+' '+(mt?mt.label:m.type);if(m.time)l+=' ('+m.time+')';l+=': '+m.content;if(m.calories)l+=' ['+m.calories+'kcal]';L.push(l)});
+  var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);if(tc>0)L.push('\n合計: '+tc+' kcal');
+  copyText(L.join('\n'),$('m-copy'));
 };
 
 function renderMeals(){
-var d=todayStr(),dm=meals.filter(function(m){return m.date===d}),past=meals.filter(function(m){return m.date!==d});
-var pg={};past.forEach(function(m){if(!pg[m.date])pg[m.date]=[];pg[m.date].push(m)});
-var pDates=Object.keys(pg).sort().reverse().slice(0,7);
-var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);
-var h=’’;
-if(dm.length){
-h+=’<div class="date-hdr"><span>TODAY</span>’+(tc>0?’<span class="mono" style="color:var(--org);font-size:11px">’+tc+’ kcal</span>’:’’)+’</div>’;
-dm.forEach(function(m){
-var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});
-h+=’<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><div><span style="font-size:13px">’+(mt?mt.icon:’’)+’</span><span style="color:var(--t3);font-size:12px;font-weight:600;margin-left:4px">’+(mt?mt.label:m.type)+’</span><span style="color:var(--t5);font-size:10px;margin-left:6px">’+m.time+’</span></div><div style="color:var(--t2);font-size:13px;margin-top:3px;line-height:1.4">’+m.content+’</div>’+(m.calories?’<div class="mono" style="color:var(--org);font-size:11px;margin-top:2px">’+m.calories+’ kcal</div>’:’’)+’</div><div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>’;
-});
-}
-pDates.forEach(function(date){
-h+=’<div style="margin-top:14px"><div style="font-size:11px;color:var(--t4);font-weight:700;letter-spacing:2px;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin-bottom:5px">’+date+’</div>’;
-pg[date].forEach(function(m){
-var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});
-h+=’<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><span style="font-size:12px">’+(mt?mt.icon:’’)+’</span><span style="color:var(--t3);font-size:11px;margin-left:4px">’+(mt?mt.label:m.type)+’</span><span style="color:var(--t5);font-size:10px;margin-left:6px">’+(m.time||’’)+’</span><div style="color:var(--t3);font-size:12px;margin-top:2px">’+m.content+(m.calories?’ [’+m.calories+‘kcal]’:’’)+’</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>’;
-});
-h+=’</div>’;
-});
-$(‘meal-list’).innerHTML=h||’<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">記録なし</div>’;
+  var d=todayStr(),dm=meals.filter(function(m){return m.date===d}),past=meals.filter(function(m){return m.date!==d});
+  var pg={};past.forEach(function(m){if(!pg[m.date])pg[m.date]=[];pg[m.date].push(m)});
+  var pDates=Object.keys(pg).sort().reverse().slice(0,7);
+  var tc=dm.reduce(function(s,m){return s+(m.calories||0)},0);
+  var h='';
+  if(dm.length){
+    h+='<div class="date-hdr"><span>TODAY</span>'+(tc>0?'<span class="mono" style="color:var(--org);font-size:11px">'+tc+' kcal</span>':'')+'</div>';
+    dm.forEach(function(m){
+      var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});
+      h+='<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><div><span style="font-size:13px">'+(mt?mt.icon:'')+'</span><span style="color:var(--t3);font-size:12px;font-weight:600;margin-left:4px">'+(mt?mt.label:m.type)+'</span><span style="color:var(--t5);font-size:10px;margin-left:6px">'+m.time+'</span></div><div style="color:var(--t2);font-size:13px;margin-top:3px;line-height:1.4">'+m.content+'</div>'+(m.calories?'<div class="mono" style="color:var(--org);font-size:11px;margin-top:2px">'+m.calories+' kcal</div>':'')+'</div><div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>';
+    });
+  }
+  pDates.forEach(function(date){
+    h+='<div style="margin-top:14px"><div style="font-size:11px;color:var(--t4);font-weight:700;letter-spacing:2px;border-bottom:1px solid #1a1a1a;padding-bottom:4px;margin-bottom:5px">'+date+'</div>';
+    pg[date].forEach(function(m){
+      var idx=meals.indexOf(m),mt=MEAL_TYPES.find(function(t){return t.id===m.type});
+      h+='<div class="card" style="align-items:flex-start"><div style="flex:1;cursor:pointer" onclick="openEditMeal('+idx+')"><span style="font-size:12px">'+(mt?mt.icon:'')+'</span><span style="color:var(--t3);font-size:11px;margin-left:4px">'+(mt?mt.label:m.type)+'</span><span style="color:var(--t5);font-size:10px;margin-left:6px">'+(m.time||'')+'</span><div style="color:var(--t3);font-size:12px;margin-top:2px">'+m.content+(m.calories?' ['+m.calories+'kcal]':'')+'</div></div><div style="display:flex;gap:4px;flex-shrink:0"><button class="edit-btn" onclick="openEditMeal('+idx+')">✎</button><button class="del" onclick="deleteMeal('+idx+')">✕</button></div></div>';
+    });
+    h+='</div>';
+  });
+  $('meal-list').innerHTML=h||'<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">記録なし</div>';
 }
 
 window.openEditMeal=openEditMeal;
@@ -511,107 +500,106 @@ window.deleteMeal=function(idx){meals.splice(idx,1);saveMeals();renderMeals()};
 // ═══ BODY ═══
 var bodyChart=null;
 
-$(‘b-add’).onclick=function(){
-var w=$(‘b-wt’).value,bf=$(‘b-bf’).value;if(!w&&!bf)return;
-bodyMetrics.push({date:todayStr(),time:nowTime(),weight:w?parseFloat(w):null,bodyFat:bf?parseFloat(bf):null});
-saveBody();$(‘b-wt’).value=’’;$(‘b-bf’).value=’’;renderBody();
+$('b-add').onclick=function(){
+  var w=$('b-wt').value,bf=$('b-bf').value;if(!w&&!bf)return;
+  bodyMetrics.push({date:todayStr(),time:nowTime(),weight:w?parseFloat(w):null,bodyFat:bf?parseFloat(bf):null});
+  saveBody();$('b-wt').value='';$('b-bf').value='';renderBody();
 };
 
-$(‘b-copy’).onclick=function(){
-var db=bodyMetrics.filter(function(m){return m.date===todayStr()});
-if(!db.length){copyText(‘今日の体組成記録なし’,$(‘b-copy’));return}
-var b=db[db.length-1];var t=‘🏋️ ‘+todayStr()+’ 体組成\n’;
-if(b.weight)t+=‘体重: ‘+b.weight+’ kg\n’;if(b.bodyFat)t+=‘体脂肪率: ‘+b.bodyFat+’ %’;
-copyText(t,$(‘b-copy’));
+$('b-copy').onclick=function(){
+  var db=bodyMetrics.filter(function(m){return m.date===todayStr()});
+  if(!db.length){copyText('今日の体組成記録なし',$('b-copy'));return}
+  var b=db[db.length-1];var t='🏋️ '+todayStr()+' 体組成\n';
+  if(b.weight)t+='体重: '+b.weight+' kg\n';if(b.bodyFat)t+='体脂肪率: '+b.bodyFat+' %';
+  copyText(t,$('b-copy'));
 };
 
 function renderBody(){
-var byDate={};bodyMetrics.forEach(function(m){byDate[m.date]=m});
-var cd=Object.values(byDate).sort(function(a,b){return a.date.localeCompare(b.date)});
-if(cd.length>=2){
-$(‘chart-wrap’).style.display=’’;
-if(bodyChart)bodyChart.destroy();
-bodyChart=new Chart($(‘body-chart’),{
-type:‘line’,
-data:{labels:cd.map(function(m){return m.date.slice(5)}),
-datasets:[
-{label:‘Weight (kg)’,data:cd.map(function(m){return m.weight}),borderColor:’#FF3B30’,backgroundColor:’#FF3B3022’,tension:.3,pointRadius:3,yAxisID:‘y’,spanGaps:true},
-{label:‘Body Fat (%)’,data:cd.map(function(m){return m.bodyFat}),borderColor:’#34C759’,backgroundColor:’#34C75922’,tension:.3,pointRadius:3,yAxisID:‘y1’,spanGaps:true}
-]},
-options:{responsive:true,maintainAspectRatio:false,
-plugins:{legend:{labels:{color:’#888’,font:{size:10}}}},
-scales:{
-x:{ticks:{color:’#555’,font:{size:9}},grid:{color:’#1e1e1e’}},
-y:{position:‘left’,ticks:{color:’#FF3B30’,font:{size:9}},grid:{color:’#1e1e1e’}},
-y1:{position:‘right’,ticks:{color:’#34C759’,font:{size:9}},grid:{drawOnChartArea:false}}
-}}
-});
-}else{$(‘chart-wrap’).style.display=‘none’}
-if(!bodyMetrics.length){$(‘body-list’).innerHTML=’<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">No records yet</div>’;return}
-var h=’’;
-var rev=bodyMetrics.slice().reverse();
-rev.forEach(function(m,i){
-var idx=bodyMetrics.length-1-i;
-h+=’<div class="card"><div style="color:var(--t3);font-size:11px">’+m.date+’ ‘+(m.time||’’)+’</div><div style="display:flex;align-items:center;gap:12px">’+(m.weight?’<span class="mono" style="color:var(--red);font-weight:700;font-size:13px">’+m.weight+’<span style="color:var(--t4);font-size:9px"> kg</span></span>’:’’)+(m.bodyFat?’<span class="mono" style="color:var(--grn);font-weight:700;font-size:13px">’+m.bodyFat+’<span style="color:var(--t4);font-size:9px"> %</span></span>’:’’)+’<button class="del" onclick="deleteBody('+idx+')">✕</button></div></div>’;
-});
-$(‘body-list’).innerHTML=h;
+  var byDate={};bodyMetrics.forEach(function(m){byDate[m.date]=m});
+  var cd=Object.values(byDate).sort(function(a,b){return a.date.localeCompare(b.date)});
+  if(cd.length>=2){
+    $('chart-wrap').style.display='';
+    if(bodyChart)bodyChart.destroy();
+    bodyChart=new Chart($('body-chart'),{
+      type:'line',
+      data:{labels:cd.map(function(m){return m.date.slice(5)}),
+        datasets:[
+          {label:'Weight (kg)',data:cd.map(function(m){return m.weight}),borderColor:'#FF3B30',backgroundColor:'#FF3B3022',tension:.3,pointRadius:3,yAxisID:'y',spanGaps:true},
+          {label:'Body Fat (%)',data:cd.map(function(m){return m.bodyFat}),borderColor:'#34C759',backgroundColor:'#34C75922',tension:.3,pointRadius:3,yAxisID:'y1',spanGaps:true}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#888',font:{size:10}}}},
+        scales:{
+          x:{ticks:{color:'#555',font:{size:9}},grid:{color:'#1e1e1e'}},
+          y:{position:'left',ticks:{color:'#FF3B30',font:{size:9}},grid:{color:'#1e1e1e'}},
+          y1:{position:'right',ticks:{color:'#34C759',font:{size:9}},grid:{drawOnChartArea:false}}
+        }}
+    });
+  }else{$('chart-wrap').style.display='none'}
+  if(!bodyMetrics.length){$('body-list').innerHTML='<div style="color:var(--t5);text-align:center;padding:28px;font-size:13px">No records yet</div>';return}
+  var h='';
+  var rev=bodyMetrics.slice().reverse();
+  rev.forEach(function(m,i){
+    var idx=bodyMetrics.length-1-i;
+    h+='<div class="card"><div style="color:var(--t3);font-size:11px">'+m.date+' '+(m.time||'')+'</div><div style="display:flex;align-items:center;gap:12px">'+(m.weight?'<span class="mono" style="color:var(--red);font-weight:700;font-size:13px">'+m.weight+'<span style="color:var(--t4);font-size:9px"> kg</span></span>':'')+(m.bodyFat?'<span class="mono" style="color:var(--grn);font-weight:700;font-size:13px">'+m.bodyFat+'<span style="color:var(--t4);font-size:9px"> %</span></span>':'')+'<button class="del" onclick="deleteBody('+idx+')">✕</button></div></div>';
+  });
+  $('body-list').innerHTML=h;
 }
 
 window.deleteBody=function(idx){bodyMetrics.splice(idx,1);saveBody();renderBody()};
 
 // ═══ DATA BACKUP ═══
 function getAllData(){
-return {_reptimer_backup:true,_version:3,_date:todayStr()+’ ’+nowTime(),exercises:exercises,logs:logs,bodyMetrics:bodyMetrics,meals:meals,settings:settings};
+  return {_reptimer_backup:true,_version:3,_date:todayStr()+' '+nowTime(),exercises:exercises,logs:logs,bodyMetrics:bodyMetrics,meals:meals,settings:settings};
 }
 
 function renderDataStats(){
-var logDates={};logs.forEach(function(l){logDates[l.date]=true});
-var mealDates={};meals.forEach(function(m){mealDates[m.date]=true});
-$(‘d-stats’).innerHTML=‘🏋️ トレーニング: <b>’+logs.length+’</b> sets (’+Object.keys(logDates).length+’ days)<br>🍽️ 食事: <b>’+meals.length+’</b> 件 (’+Object.keys(mealDates).length+’ days)<br>📊 体組成: <b>’+bodyMetrics.length+’</b> 件<br>💪 種目: <b>’+exercises.length+’</b> 件’;
+  var logDates={};logs.forEach(function(l){logDates[l.date]=true});
+  var mealDates={};meals.forEach(function(m){mealDates[m.date]=true});
+  $('d-stats').innerHTML='🏋️ トレーニング: <b>'+logs.length+'</b> sets ('+Object.keys(logDates).length+' days)<br>🍽️ 食事: <b>'+meals.length+'</b> 件 ('+Object.keys(mealDates).length+' days)<br>📊 体組成: <b>'+bodyMetrics.length+'</b> 件<br>💪 種目: <b>'+exercises.length+'</b> 件';
 }
 
-$(‘d-export-file’).onclick=function(){
-var data=JSON.stringify(getAllData(),null,2);
-var blob=new Blob([data],{type:‘application/json’});
-var url=URL.createObjectURL(blob);
-var a=document.createElement(‘a’);
-a.href=url;a.download=‘reptimer-backup-’+todayStr()+’.json’;
-document.body.appendChild(a);a.click();document.body.removeChild(a);
-URL.revokeObjectURL(url);
+$('d-export-file').onclick=function(){
+  var data=JSON.stringify(getAllData(),null,2);
+  var blob=new Blob([data],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='reptimer-backup-'+todayStr()+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };
 
-$(‘d-export-clip’).onclick=function(){copyText(JSON.stringify(getAllData()),$(‘d-export-clip’))};
+$('d-export-clip').onclick=function(){copyText(JSON.stringify(getAllData()),$('d-export-clip'))};
 
-$(‘d-import-file’).onclick=function(){$(‘d-file-input’).click()};
-$(‘d-file-input’).onchange=function(e){
-var file=e.target.files[0];if(!file)return;
-var reader=new FileReader();
-reader.onload=function(ev){
-try{
-var data=JSON.parse(ev.target.result);
-if(!data._reptimer_backup){alert(‘Rep Timerのバックアップデータではありません’);return}
-if(!confirm(‘ファイルからデータを復元しますか？\n現在のデータは上書きされます。’))return;
-if(data.exercises){exercises=data.exercises;saveEx()}
-if(data.logs){logs=data.logs;saveLogs()}
-if(data.bodyMetrics){bodyMetrics=data.bodyMetrics;saveBody()}
-if(data.meals){meals=data.meals;saveMeals()}
-if(data.settings){settings=data.settings;saveSets()}
-renderExSelect();renderDataStats();
-alert(‘✓ データを復元しました！’);
-}catch(e){alert(‘ファイルの読み込みに失敗しました’)}
-};
-reader.readAsText(file);e.target.value=’’;
+$('d-import-file').onclick=function(){$('d-file-input').click()};
+$('d-file-input').onchange=function(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var data=JSON.parse(ev.target.result);
+      if(!data._reptimer_backup){alert('Rep Timerのバックアップデータではありません');return}
+      if(!confirm('ファイルからデータを復元しますか？\n現在のデータは上書きされます。'))return;
+      if(data.exercises){exercises=data.exercises;saveEx()}
+      if(data.logs){logs=data.logs;saveLogs()}
+      if(data.bodyMetrics){bodyMetrics=data.bodyMetrics;saveBody()}
+      if(data.meals){meals=data.meals;saveMeals()}
+      if(data.settings){settings=data.settings;saveSets()}
+      renderExSelect();renderDataStats();
+      alert('✓ データを復元しました！');
+    }catch(e){alert('ファイルの読み込みに失敗しました')}
+  };
+  reader.readAsText(file);e.target.value='';
 };
 
-$(‘d-clear’).onclick=function(){
-if(!confirm(‘本当にすべてのデータを削除しますか？’))return;
-if(!confirm(‘最後の確認です。本当に削除しますか？’))return;
-exercises=[];logs=[];bodyMetrics=[];meals=[];settings={repTime:4,restTime:60,snd:true};
-saveEx();saveLogs();saveBody();saveMeals();saveSets();
-renderExSelect();renderDataStats();
-alert(‘全データを削除しました’);
+$('d-clear').onclick=function(){
+  if(!confirm('本当にすべてのデータを削除しますか？'))return;
+  if(!confirm('最後の確認です。本当に削除しますか？'))return;
+  exercises=[];logs=[];bodyMetrics=[];meals=[];settings={repTime:4,restTime:60,snd:true};
+  saveEx();saveLogs();saveBody();saveMeals();saveSets();
+  renderExSelect();renderDataStats();
+  alert('全データを削除しました');
 };
 </script>
-
 </body>
 </html>
